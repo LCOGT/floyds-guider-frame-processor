@@ -82,6 +82,9 @@ def extract_stats_from_xml_file(xml_file):
 def get_site_from_camera_code(camera_code):
     """
     Returns a site, given an autoguider camera code
+
+    :param camera_code: camera code defined in ConfigDB (e.g. kb38)
+    :return: LCO site where camera is located
     """
     camera_mapping_url = "http://configdb.lco.gtn/camera_mappings/"
     camera_mappings = read_table(camera_mapping_url, sep='\s+', header=0, escapechar='#')
@@ -100,7 +103,7 @@ def get_guider_camera_codes(camera_type = 13):
     Get all FLOYDS guider camera codes from ConfigDB
 
     :param camera_type: ConfigDB camera type id (http://configdb.lco.gtn/cameratypes/)
-    :return: dictionary of the form {camera_id:camera_code}
+    :return: dictionary of the form {camera_code : site}
     """
     root_url = "http://configdb.lco.gtn/cameras/"
     parameters = dict(camera_type=str(camera_type))
@@ -116,8 +119,13 @@ def get_guider_camera_codes(camera_type = 13):
 
 def get_path(site_code, camera_code, observation_date):
     """
-    Get path to FLOYDS guider frames on chanunpa from
-    camera code
+    Get path to FLOYDS guider frames on Chanunpa given site code, camera code,
+    and observation date
+
+    :param site_code: LCO 3-letter site code
+    :param camera_code: camera code defined in ConfigDB (e.g. kb38)
+    :param observation_date: date in YYYYMMDD format
+    :return: path to floyds guider frames on Chanunpa
     """
 
     base_path = os.path.join("/", "archive", "engineering")
