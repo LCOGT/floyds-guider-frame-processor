@@ -2,6 +2,7 @@ import datetime
 import os
 from glob import glob
 from xml.etree import ElementTree
+import requests
 
 import numpy as np
 from astropy.io import fits
@@ -77,6 +78,24 @@ def extract_stats_from_xml_file(xml_file):
         stats = np.nan, np.nan, np.nan, np.nan
     return stats
 
+def get_guider_cameras(camera_type = 13):
+    """
+    Get all FLOYDS guider camera IDs/codes from ConfigDB
+
+    :param camera_type: ConfigDB camera type id (http://configdb.lco.gtn/cameratypes/)
+    :return: dictionary of the form {camera_id:camera_code}
+    """
+    root_url = "http://configdb.lco.gtn/cameras/"
+    parameters = dict(camera_type=str(camera_type))
+
+    response = requests.get(url=root_url, params=parameters).json()
+    results = response['results']
+    camera_info = {}
+
+    for result in results:
+        camera_info[result['id']] = result['code']
+
+    return camera_info
 
 def get_files(path):
     frames = glob(path)
