@@ -1,13 +1,18 @@
+import datetime
 import os
+from glob import glob
 from xml.etree import ElementTree
 
 import numpy as np
 from astropy.io import fits
 from astropy.time import Time
 
-from floyds_guider.main import logger
-from floyds_guider.plot import logger
 import string
+import logging
+
+logger = logging.getLogger('floyds-guider-frames')
+
+MINIMUM_GOOD_FILE_SIZE = 100000  # in bytes
 
 
 def convert_to_safe_filename(unsafe_string):
@@ -16,7 +21,7 @@ def convert_to_safe_filename(unsafe_string):
 
 
 def read_keywords_from_fits_files(fits_file_paths, keyword):
-    """Loops through the list of FITS guide frames, reading in
+    """Loops through the list of FITS frames, reading in
     the fits header keyword and returning this as a list"""
     return [fits.getval(guider_fits_filename, keyword=keyword) for guider_fits_filename in fits_file_paths]
 
@@ -73,20 +78,70 @@ def extract_stats_from_xml_file(xml_file):
     return stats
 
 
-def link_frames_to_images_directory(frames, image_directory):
-    """
-    Link the jpg and fits files for both spectra and guiders into the images directory
-    """
-    if not os.path.exists(image_directory):
-        os.mkdir(image_directory)
-    for frame in frames:
-        try:
-            os.symlink(frame, image_directory)
-        except Exception as e:
-            logger.error('Could not link {frame}: {exception}'.format(frame=frame, exception=e))
-        # Also copy over the corresponding jpg file
-        try:
-            jpg_file = frame.replace('flash', 'flash' + os.path.sep + 'jpg').replace('.fits', '.jpg')
-            os.symlink(jpg_file, image_directory)
-        except Exception as e:
-            logger.error('Could not link {frame}: {exception}'.format(frame=jpg_file, exception=e))
+def get_files(path):
+    frames = glob(path)
+    # Reject empty fits files
+    frames = [frame for frame in frames if os.path.getsize(frame) > MINIMUM_GOOD_FILE_SIZE]
+    return frames
+
+
+def get_default_dayobs(site):
+    if 'ogg' in site:
+        # Default day-obs is yesterday
+        day_obs = datetime.datetime.now() - datetime.timedelta(days=1)
+    else:
+        day_obs = datetime.datetime.now()
+    return day_obs.strftime('%Y%m%d')
+
+
+def get_guider_frames_in_molecule(frames, molecule):
+    molecule_ids = read_keywords_from_fits_files(frames, 'MOLUID')
+    return [frame for molecule_id, frame in zip(molecule_ids, frames) if molecule_id == molecule]
+
+
+def get_first_acquisition_frame(guider_frames):
+    guider_states = read_keywords_from_fits_files(guider_frames, 'AGSTATE')
+    acquisition_frames = [frame for state, frame in zip(guider_states, guider_frames) if 'ACQUIRING' in state]
+    acquisition_frames.sort()
+    return acquisition_frames[0]
+
+
+def get_science_exposures(frames):
+    obstypes = read_keywords_from_fits_files(frames, 'OBSTYPE')
+    return [frame for obstype, frame in zip(obstypes, frames) if obstype == 'SPECTRUM']
+
+
+def get_frames_in_block(frames, block_id):
+    block_ids = read_keywords_from_fits_files(frames, 'BLKUID')
+    return [frame for frame_block_id, frame in zip(block_ids, frames) if frame_block_id == block_id]
+
+
+def get_proposal_id(frames):
+    proposal_ids = read_keywords_from_fits_files(frames, 'PROPID')
+    return proposal_ids[0]
+
+
+def get_first_guiding_frame(guider_frames):
+    guider_states = read_keywords_from_fits_files(guider_frames, 'AGSTATE')
+    guiding_frames = [frame for state, frame in zip(guider_states, guider_frames) if 'GUID' in state]
+    guiding_frames.sort()
+    return guiding_frames[0]
+
+
+def get_acquisition_and_first_guiding_images(floyds_frames, guider_frames):
+    molecules = set(read_keywords_from_fits_files(floyds_frames, 'MOLUID'))
+
+    molecule_frames = []
+    for molecule in molecules:
+        guider_frames_in_molecule = get_guider_frames_in_molecule(guider_frames, molecule)
+        molecule_frames.append({'molecule_id': molecule,
+                                'acquisition_image': get_first_acquisition_frame(guider_frames_in_molecule),
+                                'first_guiding_frame': get_first_guiding_frame(guider_frames_in_molecule)})
+    molecule_frames.sort(key=lambda element: element['molecule_id'])
+    return molecule_frames
+
+
+def get_guider_frames_for_science_exposure(guider_frames, ut_start, ut_stop):
+    guider_starts = read_keywords_from_fits_files(guider_frames, 'DATE-OBS')
+    return [frame for guider_start, frame in zip(guider_starts, guider_frames)
+            if in_date_range(to_datetime(guider_start), ut_start, ut_stop)]
