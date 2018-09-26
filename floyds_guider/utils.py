@@ -3,6 +3,7 @@ import os
 from glob import glob
 from xml.etree import ElementTree
 import requests
+from pandas import read_table
 
 import numpy as np
 from astropy.io import fits
@@ -78,9 +79,25 @@ def extract_stats_from_xml_file(xml_file):
         stats = np.nan, np.nan, np.nan, np.nan
     return stats
 
-def get_guider_cameras(camera_type = 13):
+def get_site_from_camera_code(camera_code):
     """
-    Get all FLOYDS guider camera IDs/codes from ConfigDB
+    Returns a site, given an autoguider camera code
+    """
+    camera_mapping_url = "http://configdb.lco.gtn/camera_mappings/"
+    camera_mappings = read_table(camera_mapping_url, sep='\s+', header=0, escapechar='#')
+
+    site_list = camera_mappings[' Site'].tolist()
+    camera_list = camera_mappings['Autoguider'].tolist()
+
+    for site, camera in zip(site_list, camera_list):
+        if camera == camera_code:
+            return site
+    else:
+        return None
+
+def get_guider_camera_codes(camera_type = 13):
+    """
+    Get all FLOYDS guider camera codes from ConfigDB
 
     :param camera_type: ConfigDB camera type id (http://configdb.lco.gtn/cameratypes/)
     :return: dictionary of the form {camera_id:camera_code}
@@ -93,9 +110,21 @@ def get_guider_cameras(camera_type = 13):
     camera_info = {}
 
     for result in results:
-        camera_info[result['id']] = result['code']
+        camera_info[result['code']] = get_site_from_camera_code(result['code'])
 
     return camera_info
+
+def get_path(site_code, camera_code, observation_date):
+    """
+    Get path to FLOYDS guider frames on chanunpa from
+    camera code
+    """
+
+    base_path = os.path.join("/", "archive", "engineering")
+    guide_frames_path = os.path.join(base_path, str(site_code), str(camera_code),
+                                     str(observation_date), "raw")
+    return guide_frames_path
+
 
 def get_files(path):
     frames = glob(path)
