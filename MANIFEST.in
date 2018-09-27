@@ -1,1 +1,1 @@
-include templates/*.html
+include floyds_guider/templates/*.html

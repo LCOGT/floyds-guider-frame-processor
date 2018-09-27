@@ -73,15 +73,16 @@ def make_summary_plots(floyds_frames, guider_frames, output_directory):
     return summary_plots
 
 
-def make_tar_file_of_guider_frames(guider_frames, summary_plots, tar_output_file):
-    with tarfile.open(tar_output_file, 'w') as tar_file_handle:
+def make_tar_file_of_guider_frames(guider_frames, summary_plots, summary_output_directory, tar_output_file):
+    with tarfile.open(os.path.join(summary_output_directory, tar_output_file), 'w') as tar_file_handle:
         for frame in guider_frames:
             fpacked_file_path = frame.replace('flash', 'raw').replace('g01.fits', 'g00.fits.fz')
             tar_file_handle.add(fpacked_file_path, arcname=os.path.basename(fpacked_file_path))
         for summary_plot in summary_plots:
             for _, plot_file_path in summary_plot.items():
                 if '.png' in plot_file_path:
-                    tar_file_handle.add(plot_file_path, arcname=os.path.basename(plot_file_path))
+                    tar_file_handle.add(os.path.join(summary_output_directory, plot_file_path),
+                                        arcname=os.path.basename(plot_file_path))
 
 
 def make_guider_summary_webpage(summary_root_name, output_directory, molecule_info, summary_plots, floyds_frames):
@@ -159,5 +160,5 @@ def process_guider_frames():
 
         make_guider_summary_webpage(summary_block_root_name, path_for_summary_for_block,
                                     acquisition_and_first_guiding_frames, summary_plots, floyds_frames_for_block)
-        make_tar_file_of_guider_frames(guider_frames_for_block, summary_plots,
-                                       os.path.join(path_for_summary_for_block, summary_block_root_name + '.tar'))
+        make_tar_file_of_guider_frames(guider_frames_for_block, summary_plots, path_for_summary_for_block,
+                                       summary_block_root_name + '.tar')
