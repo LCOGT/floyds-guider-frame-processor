@@ -128,23 +128,11 @@ def get_first_guiding_frame(guider_frames):
     return guiding_frames[0] if len(guiding_frames) > 0 else None
 
 
-def get_acquisition_and_first_guiding_images(floyds_frames, guider_frames):
-    molecules = set(read_keywords_from_fits_files(floyds_frames, 'MOLUID'))
-
-    molecule_frames = []
-    for molecule in molecules:
-        guider_frames_in_molecule = get_guider_frames_in_molecule(guider_frames, molecule)
-        first_acquistion_frame = get_first_acquisition_frame(guider_frames_in_molecule)
-        first_guiding_frame = get_first_guiding_frame(guider_frames_in_molecule)
-        if first_acquistion_frame is not None and first_guiding_frame is not None:
-            molecule_frames.append({'molecule_id': molecule,
-                                    'acquisition_image': first_acquistion_frame,
-                                    'first_guiding_frame': first_guiding_frame})
-    molecule_frames.sort(key=lambda element: element['molecule_id'])
-    return molecule_frames
-
-
 def get_guider_frames_for_science_exposure(guider_frames, ut_start, ut_stop):
     guider_starts = read_keywords_from_fits_files(guider_frames, 'DATE-OBS')
     return [frame for guider_start, frame in zip(guider_starts, guider_frames)
             if in_date_range(to_datetime(guider_start), ut_start, ut_stop)]
+
+
+def convert_raw_fits_path_to_jpg(frame):
+    return frame.replace('flash', 'flash' + os.path.sep + 'jpg').replace('.fits', '.jpg')

@@ -1,4 +1,5 @@
 import matplotlib
+
 matplotlib.use('Agg')
 
 import lcogt_logging
@@ -10,6 +11,7 @@ from floyds_guider import utils, plot
 from astropy.io import fits
 import tarfile
 import jinja2
+import shutil
 
 logger = logging.getLogger('floyds-guider-frames')
 
@@ -30,6 +32,26 @@ def setup_logging(log_level):
     handler.setLevel(log_level)
     handler.setFormatter(lcogt_logging.LCOGTFormatter())
     logger.addHandler(handler)
+
+
+def get_acquisition_and_first_guiding_images(floyds_frames, guider_frames, output_directory):
+    molecules = set(utils.read_keywords_from_fits_files(floyds_frames, 'MOLUID'))
+
+    molecule_frames = []
+    for molecule in molecules:
+        guider_frames_in_molecule = utils.get_guider_frames_in_molecule(guider_frames, molecule)
+        first_acquistion_frame = utils.get_first_acquisition_frame(guider_frames_in_molecule)
+        first_guiding_frame = utils.get_first_guiding_frame(guider_frames_in_molecule)
+        if first_acquistion_frame is not None and first_guiding_frame is not None:
+            acquisition_jpg = utils.convert_raw_fits_path_to_jpg(first_acquistion_frame)
+            shutil.copy(acquisition_jpg, os.path.join(output_directory, os.path.basename(acquisition_jpg)))
+            guiding_jpg = utils.convert_raw_fits_path_to_jpg(first_guiding_frame)
+            shutil.copy(guiding_jpg, os.path.join(output_directory, os.path.basename(guiding_jpg)))
+            molecule_frames.append({'molecule_id': molecule,
+                                    'acquisition_image': os.path.basename(acquisition_jpg),
+                                    'first_guiding_frame': os.path.basename(guiding_jpg)})
+    molecule_frames.sort(key=lambda element: element['molecule_id'])
+    return molecule_frames
 
 
 def make_summary_plots(floyds_frames, guider_frames, output_directory):
@@ -124,8 +146,9 @@ def process_guider_frames():
         if not os.path.exists(path_for_summary_for_block):
             os.mkdir(path_for_summary_for_block)
 
-        acquisition_and_first_guiding_frames = utils.get_acquisition_and_first_guiding_images(floyds_frames_for_block,
-                                                                                              guider_frames_for_block)
+        acquisition_and_first_guiding_frames = get_acquisition_and_first_guiding_images(floyds_frames_for_block,
+                                                                                        guider_frames_for_block,
+                                                                                        path_for_summary_for_block)
 
         summary_plots = make_summary_plots(floyds_frames_for_block, guider_frames_for_block, path_for_summary_for_block)
 

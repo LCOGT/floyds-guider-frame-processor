@@ -25,7 +25,7 @@ def make_guide_info_plots(guider_frames, ut_start, output_basename):
         guider_time_label = 'Guider Observation Time - {ut_start} (Seconds)'.format(ut_start=ut_start)
 
         plot_file_names = {'guide_state': output_basename + '_guidestate.png',
-                           'total_flux': output_basename + '_guidecounts.png',
+                           'total_counts': output_basename + '_guidecounts.png',
                            'x_position': output_basename + '_guidext.png',
                            'y_position': output_basename + '_guideyt.png',
                            'position': output_basename + '_guidexy.png',
@@ -38,8 +38,8 @@ def make_guide_info_plots(guider_frames, ut_start, output_basename):
                      for f in guider_frames]
         stats = utils.read_stats_from_xml_files(xml_files)
 
-        make_plot_for_webpage(relative_guider_times, stats['total_flux'], guider_time_label, 'Total Counts',
-                              plot_file_names['total_flux'])
+        make_plot_for_webpage(relative_guider_times, stats['total_counts'], guider_time_label, 'Total Counts',
+                              plot_file_names['total_counts'])
 
         make_plot_for_webpage(relative_guider_times, stats['x_center'], guider_time_label, 'X Center (pixels)',
                               plot_file_names['x_position'])
