@@ -1,7 +1,4 @@
 import matplotlib
-
-from floyds_guider.utils import logger
-
 matplotlib.use('Agg')
 
 import lcogt_logging
