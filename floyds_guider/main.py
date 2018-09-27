@@ -49,7 +49,7 @@ def get_acquisition_and_first_guiding_images(floyds_frames, guider_frames, outpu
             shutil.copy(guiding_jpg, os.path.join(output_directory, os.path.basename(guiding_jpg)))
             molecule_frames.append({'id': molecule,
                                     'acquisition_image': os.path.basename(acquisition_jpg),
-                                    'first_guiding_frame': os.path.basename(guiding_jpg)})
+                                    'first_guiding_image': os.path.basename(guiding_jpg)})
     molecule_frames.sort(key=lambda element: element['id'])
     return molecule_frames
 
@@ -67,7 +67,7 @@ def make_summary_plots(floyds_frames, guider_frames, output_directory):
                                               os.path.join(output_directory, exposure_basename))
         for plot_file in plot_set:
             plot_set[plot_file] = os.path.basename(plot_set[plot_file])
-        plot_set['science_frame_name'] = science_exposure
+        plot_set['science_frame_name'] = os.path.basename(science_exposure)
         summary_plots.append(plot_set)
     summary_plots.sort(key=lambda element: element['science_frame_name'])
     return summary_plots
@@ -92,7 +92,8 @@ def make_guider_summary_webpage(summary_root_name, output_directory, molecule_in
         shutil.copy(jpg_file, os.path.join(output_directory, os.path.basename(jpg_file)))
     with open(os.path.join(output_directory, summary_root_name + '.html'), 'w') as file_handle:
         file_handle.write(template.render(molecules=molecule_info, summary_plots=summary_plots,
-                                          floyds_frames=jpgs, block_title=summary_root_name))
+                                          floyds_frames=[os.path.basename(jpg_file) for jpg_file in jpgs],
+                                          block_title=summary_root_name))
 
 
 def link_frames_to_images_directory(frames, image_directory):

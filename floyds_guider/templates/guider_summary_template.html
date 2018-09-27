@@ -33,20 +33,18 @@
 <table>
     {% for summary_plot in summary_plots %}
     <tr ALIGN="center">
-        <td COLSPAN=1><b> Guide Summary for {{summary_plot["science_frame_name"]}} </b></td>
+        <th COLSPAN="3" ALIGN="CENTER"><b> Guide Summary for Molecule {{summary_plot["science_frame_name"]}} </b></th>
     </tr>
     <tr>
-        <th ROWSPAN=2><IMG src="{{summary_plot['total_counts']}}" height="300"></th>
-        <th ROWSPAN=2><IMG src="{{summary_plot['fwhm']}}" height="300"></th>
-        <th ROWSPAN=2><IMG src="{{summary_plot['guide_state']}}" height="300"></th>
+        <td ROWSPAN=2><IMG src="{{summary_plot['total_counts']}}" height="300"></td>
+        <td ROWSPAN=2><IMG src="{{summary_plot['fwhm']}}" height="300"></td>
+        <td ROWSPAN=2><IMG src="{{summary_plot['guide_state']}}" height="300"></td>
     </tr>
     <tr></tr>
-</table>
-<table>
     <tr>
-        <th ROWSPAN=2><IMG src="{{summary_plot['position']}}" height="300"></th>
-        <th ROWSPAN=2><IMG src="{{summary_plot['x_position']}}" height="300"></th>
-        <th ROWSPAN=2><IMG src="{{summary_plot['y_position']}}" height="300"></th>
+        <td ROWSPAN=2><IMG src="{{summary_plot['position']}}" height="300"></td>
+        <td ROWSPAN=2><IMG src="{{summary_plot['x_position']}}" height="300"></td>
+        <td ROWSPAN=2><IMG src="{{summary_plot['y_position']}}" height="300"></td>
     </tr>
     {% endfor %}
 </table>
@@ -57,7 +55,7 @@
     </tr>
     {% for frame in floyds_frames %}
     <tr>
-        <th ROWSPAN=2><IMG src="{{frame}}" height="200"></th>
+        <td ROWSPAN=2><IMG src="{{frame}}" height="200"></td>
     </tr>
     <tr></tr>
     <tr></tr>
