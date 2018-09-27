@@ -18,5 +18,6 @@ setup(name='floyds-guider-frame-processor',
       version='0.0.1',
       packages=find_packages(),
       package_dir={'floyds_guider': 'floyds_guider'},
+      include_package_data=True,
       install_requires=['numpy', 'matplotlib', 'astropy', 'lcogt_logging', 'jinja2'],
-      entry_points = {'console_scripts': ['process-floyds-guider=floyds_guider.main:process_guider_frames']})
+      entry_points={'console_scripts': ['process-floyds-guider=floyds_guider.main:process_guider_frames']})
