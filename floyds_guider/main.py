@@ -16,9 +16,9 @@ import jinja2
 
 logger = logging.getLogger('floyds-guider-frames')
 
-DATA_ROOT = os.path.join('', 'mnt', 'data', 'daydirs')
-IMAGE_ROOT_DIRECTORY = os.path.join('', 'var', 'www', 'html', 'images')
-SUMMARY_ROOT_DIRECTORY = os.path.join('', 'var', 'www', 'html', 'night_summary')
+DATA_ROOT = os.path.join(os.path.sep, 'mnt', 'data', 'daydirs')
+IMAGE_ROOT_DIRECTORY = os.path.join(os.path.sep, 'var', 'www', 'html', 'images')
+SUMMARY_ROOT_DIRECTORY = os.path.join(os.path.sep, 'var', 'www', 'html', 'night_summary')
 
 GUIDER_CAMERAS = {'ogg': 'kb42', 'coj': 'kb37'}
 FLOYDS_CAMERAS = {'ogg': 'en06', 'coj': 'en05'}
@@ -108,7 +108,7 @@ def process_guider_frames():
 
     floyds_frames = utils.get_files(os.path.join(DATA_ROOT, floyds_camera, args.day_obs, 'flash', '*g01.fits'))
 
-    link_frames_to_images_directory(guider_frames + floyds_frames, os.path.join(IMAGE_ROOT_DIRECTORY + args.day_obs))
+    link_frames_to_images_directory(guider_frames + floyds_frames, os.path.join(IMAGE_ROOT_DIRECTORY, args.day_obs))
 
     directory_for_summary_on_dayobs = os.path.join(SUMMARY_ROOT_DIRECTORY, args.day_obs)
     if not os.path.exists(directory_for_summary_on_dayobs):
