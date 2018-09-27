@@ -12,8 +12,8 @@
 {% for molecule in molecules %}
 <table>
     <tr ALIGN="center">
-        <td COLSPAN=1><b> Acquisition image for {{molecule["id"]}} </b></td>
-        <td COLSPAN=1><b> First Guiding Image for {{molecule["id"]}}</b></td>
+        <td COLSPAN=1><b> Acquisition image for Molecule {{molecule["id"]}} </b></td>
+        <td COLSPAN=1><b> First Guiding Image for Molecule {{molecule["id"]}}</b></td>
     </tr>
     <tr>
         <th ROWSPAN=2>
@@ -33,7 +33,7 @@
 <table>
     {% for summary_plot in summary_plots %}
     <tr ALIGN="center">
-        <th COLSPAN="3" ALIGN="CENTER"><b> Guide Summary for Molecule {{summary_plot["science_frame_name"]}} </b></th>
+        <th COLSPAN="3" ALIGN="CENTER"><b> Guide Summary for {{summary_plot["science_frame_name"]}} </b></th>
     </tr>
     <tr>
         <td ROWSPAN=2><IMG src="{{summary_plot['total_counts']}}" height="300"></td>
