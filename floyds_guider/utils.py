@@ -56,7 +56,7 @@ def read_stats_from_xml_files(xml_files):
     for xml_file in xml_files:
         for keyword, value in zip(['total_counts', 'x_center', 'y_center', 'fwhm'],
                                   extract_stats_from_xml_file(xml_file)):
-            stats[keyword] = value
+            stats[keyword].append(value)
     return stats
 
 
