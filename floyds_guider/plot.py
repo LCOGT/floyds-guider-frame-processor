@@ -6,11 +6,13 @@ from floyds_guider import utils
 logger = logging.getLogger('floyds-guider-frames')
 
 
-def make_plot_for_webpage(x, y, xlabel, ylabel, output_filename):
+def make_plot_for_webpage(x, y, xlabel, ylabel, output_filename, y_tick_label_rotation=0):
     pyplot.clf()
     pyplot.plot(x, y, 'bo')
     pyplot.xlabel(xlabel)
     pyplot.ylabel(ylabel)
+    pyplot.yticks(rotation=y_tick_label_rotation)
+    pyplot.tight_layout()
     pyplot.savefig(output_filename)
 
 
@@ -32,7 +34,7 @@ def make_guide_info_plots(guider_frames, ut_start, output_basename):
                            'fwhm': output_basename + '_guidefwhmt.png'}
 
         make_plot_for_webpage(relative_guider_times, guider_states, guider_time_label,
-                              'Guider State', plot_file_names['guide_state'])
+                              'Guider State', plot_file_names['guide_state'], y_tick_label_rotation=65)
 
         xml_files = [f.replace('.fits', '.fits.guide.xml').replace('flash/', 'cat/')
                      for f in guider_frames]
