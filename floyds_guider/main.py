@@ -20,7 +20,7 @@ DATA_ROOT = os.path.join(os.path.sep, 'mnt', 'data', 'daydirs')
 IMAGE_ROOT_DIRECTORY = os.path.join(os.path.sep, 'var', 'www', 'html', 'images')
 SUMMARY_ROOT_DIRECTORY = os.path.join(os.path.sep, 'var', 'www', 'html', 'night_summary')
 
-GUIDER_CAMERAS = {'ogg': 'kb42', 'coj': 'kb37'}
+GUIDER_CAMERAS = {'ogg': 'kb42', 'coj': 'kb38'}
 FLOYDS_CAMERAS = {'ogg': 'en06', 'coj': 'en05'}
 
 JINJA_ENVIRONMENT = jinja2.Environment(loader=jinja2.PackageLoader('floyds_guider', 'templates'),
@@ -75,13 +75,13 @@ def link_frames_to_images_directory(frames, image_directory):
         os.mkdir(image_directory)
     for frame in frames:
         try:
-            os.symlink(frame, image_directory)
+            os.symlink(frame, os.path.join(image_directory, os.path.basename(frame)))
         except Exception as e:
             logger.error('Could not link {frame}: {exception}'.format(frame=frame, exception=e))
         # Also copy over the corresponding jpg file
         try:
             jpg_file = frame.replace('flash', 'flash' + os.path.sep + 'jpg').replace('.fits', '.jpg')
-            os.symlink(jpg_file, image_directory)
+            os.symlink(jpg_file, os.path.join(image_directory, os.path.basename(jpg_file)))
         except Exception as e:
             logger.error('Could not link {frame}: {exception}'.format(frame=jpg_file, exception=e))
 
@@ -106,7 +106,7 @@ def process_guider_frames():
 
     guider_frames = utils.get_files(os.path.join(DATA_ROOT, guider_camera, args.day_obs, 'flash', '*g01.fits'))
 
-    floyds_frames = utils.get_files(os.path.join(DATA_ROOT, floyds_camera, args.day_obs, 'flash', '*g01.fits'))
+    floyds_frames = utils.get_files(os.path.join(DATA_ROOT, floyds_camera, args.day_obs, 'flash', '*01.fits'))
 
     link_frames_to_images_directory(guider_frames + floyds_frames, os.path.join(IMAGE_ROOT_DIRECTORY, args.day_obs))
 

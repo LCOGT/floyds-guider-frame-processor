@@ -103,7 +103,7 @@ def get_first_acquisition_frame(guider_frames):
     guider_states = read_keywords_from_fits_files(guider_frames, 'AGSTATE')
     acquisition_frames = [frame for state, frame in zip(guider_states, guider_frames) if 'ACQUIRING' in state]
     acquisition_frames.sort()
-    return acquisition_frames[0]
+    return acquisition_frames[0] if len(acquisition_frames) > 0 else None
 
 
 def get_science_exposures(frames):
@@ -125,7 +125,7 @@ def get_first_guiding_frame(guider_frames):
     guider_states = read_keywords_from_fits_files(guider_frames, 'AGSTATE')
     guiding_frames = [frame for state, frame in zip(guider_states, guider_frames) if 'GUID' in state]
     guiding_frames.sort()
-    return guiding_frames[0]
+    return guiding_frames[0] if len(guiding_frames) > 0 else None
 
 
 def get_acquisition_and_first_guiding_images(floyds_frames, guider_frames):
@@ -134,9 +134,12 @@ def get_acquisition_and_first_guiding_images(floyds_frames, guider_frames):
     molecule_frames = []
     for molecule in molecules:
         guider_frames_in_molecule = get_guider_frames_in_molecule(guider_frames, molecule)
-        molecule_frames.append({'molecule_id': molecule,
-                                'acquisition_image': get_first_acquisition_frame(guider_frames_in_molecule),
-                                'first_guiding_frame': get_first_guiding_frame(guider_frames_in_molecule)})
+        first_acquistion_frame = get_first_acquisition_frame(guider_frames_in_molecule)
+        first_guiding_frame = get_first_guiding_frame(guider_frames_in_molecule)
+        if first_acquistion_frame is not None and first_guiding_frame is not None:
+            molecule_frames.append({'molecule_id': molecule,
+                                    'acquisition_image': first_acquistion_frame,
+                                    'first_guiding_frame': first_guiding_frame})
     molecule_frames.sort(key=lambda element: element['molecule_id'])
     return molecule_frames
 
