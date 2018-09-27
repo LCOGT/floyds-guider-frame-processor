@@ -50,7 +50,7 @@ def get_acquisition_and_first_guiding_images(floyds_frames, guider_frames, outpu
             molecule_frames.append({'id': molecule,
                                     'acquisition_image': os.path.basename(acquisition_jpg),
                                     'first_guiding_frame': os.path.basename(guiding_jpg)})
-    molecule_frames.sort(key=lambda element: element['molecule_id'])
+    molecule_frames.sort(key=lambda element: element['id'])
     return molecule_frames
 
 
