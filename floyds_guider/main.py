@@ -47,7 +47,7 @@ def get_acquisition_and_first_guiding_images(floyds_frames, guider_frames, outpu
             shutil.copy(acquisition_jpg, os.path.join(output_directory, os.path.basename(acquisition_jpg)))
             guiding_jpg = utils.convert_raw_fits_path_to_jpg(first_guiding_frame)
             shutil.copy(guiding_jpg, os.path.join(output_directory, os.path.basename(guiding_jpg)))
-            molecule_frames.append({'molecule_id': molecule,
+            molecule_frames.append({'id': molecule,
                                     'acquisition_image': os.path.basename(acquisition_jpg),
                                     'first_guiding_frame': os.path.basename(guiding_jpg)})
     molecule_frames.sort(key=lambda element: element['molecule_id'])
@@ -65,6 +65,8 @@ def make_summary_plots(floyds_frames, guider_frames, output_directory):
         guider_frames_for_science_frame = utils.get_guider_frames_for_science_exposure(guider_frames, ut_start, ut_stop)
         plot_set = plot.make_guide_info_plots(guider_frames_for_science_frame, ut_start,
                                               os.path.join(output_directory, exposure_basename))
+        for plot_file in plot_set:
+            plot_set[plot_file] = os.path.basename(plot_set[plot_file])
         plot_set['science_frame_name'] = science_exposure
         summary_plots.append(plot_set)
     summary_plots.sort(key=lambda element: element['science_frame_name'])
@@ -75,18 +77,21 @@ def make_tar_file_of_guider_frames(guider_frames, summary_plots, tar_output_file
     with tarfile.open(tar_output_file, 'w') as tar_file_handle:
         for frame in guider_frames:
             fpacked_file_path = frame.replace('flash', 'raw').replace('g01.fits', 'g00.fits.fz')
-            tar_file_handle.addfile(tarfile.TarInfo(os.path.basename(fpacked_file_path)), fpacked_file_path)
+            tar_file_handle.add(fpacked_file_path, arcname=os.path.basename(fpacked_file_path))
         for summary_plot in summary_plots:
-            for _, plot_file in summary_plot.items():
-                if '.png' in plot_file:
-                    tar_file_handle.addfile(tarfile.TarInfo(os.path.basename(plot_file)), plot_file)
+            for _, plot_file_path in summary_plot.items():
+                if '.png' in plot_file_path:
+                    tar_file_handle.add(plot_file_path, arcname=os.path.basename(plot_file_path))
 
 
-def make_guider_summary_webpage(output_path, molecule_info, summary_plots, floyds_frames):
+def make_guider_summary_webpage(summary_root_name, output_directory, molecule_info, summary_plots, floyds_frames):
     template = JINJA_ENVIRONMENT.get_template('guider_summary_template.html')
-    with open(output_path, 'w') as file_handle:
+    jpgs = [utils.convert_raw_fits_path_to_jpg(frame) for frame in floyds_frames]
+    for jpg_file in jpgs:
+        shutil.copy(jpg_file, os.path.join(output_directory, os.path.basename(jpg_file)))
+    with open(os.path.join(output_directory, summary_root_name + '.html'), 'w') as file_handle:
         file_handle.write(template.render(molecules=molecule_info, summary_plots=summary_plots,
-                                          floyds_frames=floyds_frames))
+                                          floyds_frames=jpgs, block_title=summary_root_name))
 
 
 def link_frames_to_images_directory(frames, image_directory):
@@ -152,7 +157,7 @@ def process_guider_frames():
 
         summary_plots = make_summary_plots(floyds_frames_for_block, guider_frames_for_block, path_for_summary_for_block)
 
-        make_guider_summary_webpage(os.path.join(path_for_summary_for_block, summary_block_root_name + '.html'),
+        make_guider_summary_webpage(summary_block_root_name, path_for_summary_for_block,
                                     acquisition_and_first_guiding_frames, summary_plots, floyds_frames_for_block)
         make_tar_file_of_guider_frames(guider_frames_for_block, summary_plots,
                                        os.path.join(path_for_summary_for_block, summary_block_root_name + '.tar'))
