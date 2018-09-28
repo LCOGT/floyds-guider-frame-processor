@@ -2,6 +2,8 @@ import datetime
 import os
 from glob import glob
 from xml.etree import ElementTree
+import requests
+from pandas import read_table
 
 import requests
 from pandas import read_table
@@ -104,7 +106,11 @@ def get_site_from_camera_code(camera_code):
 
 def get_guider_camera_codes(camera_type = 13):
     """
+<<<<<<< HEAD
     Get all FLOYDS autoguider camera codes and corresponding sites from ConfigDB
+=======
+    Get all FLOYDS guider camera codes from ConfigDB
+>>>>>>> 949b3f3738c2d17b3e443f6526a27b373bddef64
 
     :param camera_type: ConfigDB camera type id (http://configdb.lco.gtn/cameratypes/)
     :return: dictionary of the form {camera_code : site}
@@ -134,7 +140,11 @@ def get_path(site_code, camera_code, observation_date):
 
     base_path = os.path.join("/", "archive", "engineering")
     guide_frames_path = os.path.join(base_path, str(site_code), str(camera_code),
+<<<<<<< HEAD
                                      str(observation_date), "raw/*")
+=======
+                                     str(observation_date), "raw")
+>>>>>>> 949b3f3738c2d17b3e443f6526a27b373bddef64
     return guide_frames_path
 
 
