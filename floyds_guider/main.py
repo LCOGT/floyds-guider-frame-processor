@@ -111,21 +111,6 @@ def link_frames_to_images_directory(frames, image_directory):
         except Exception as e:
             logger.error('Could not link {frame}: {exception}'.format(frame=jpg_file, exception=e))
 
-def process_guider_frames():
-    parser = argparse.ArgumentParser(description='Make summaries of a night of FLOYDS observations and make a '
-                                                 'tar file with all of the guider frames during an exposure')
-    parser.add_argument('--site', dest='site', required=True, help='Site code', choices=['ogg', 'coj'])
-    parser.add_argument('--day-obs', dest='day_obs', default=None, help='DAY-OBS to summarize')
-    parser.add_argument('--log-level', dest='log_level', default='INFO', help='Logging level',
-                        choices=['DEBUG', 'INFO', 'WARNING', 'ERROR', 'CRITICAL'])
-
-    args = parser.parse_args()
-    setup_logging(getattr(logging, args.log_level))
-
-    logger.info('Processing FLOYDS guider frames for {site} on {dayobs}'.format(site=args.site, dayobs=args.day_obs))
-
-
-
 
 def process_guider_frames():
     parser = argparse.ArgumentParser(description='Make summaries of a night of FLOYDS observations and make a '
