@@ -1,5 +1,6 @@
 from floyds_guider import utils
 import logging
+import os
 
 logging.getLogger("floyds-guider-frames")
 
@@ -13,7 +14,7 @@ def test_get_guider_cameras():
         assert camera_dict[code] == known_mapping[code]
 
 def test_get_path():
-    known_path = "/archive/engineering/ogg/kb42/20180924/raw"
+    known_path = "/archive/engineering/ogg/kb42/20180924/raw/*"
     test_path = utils.get_path("ogg", "kb42", "20180924")
 
     assert known_path == test_path
@@ -24,3 +25,16 @@ def test_get_site_from_camera_code():
 
     assert utils.get_site_from_camera_code(good_camera_code) == 'coj'
     assert utils.get_site_from_camera_code(bad_camera_code) is None
+
+def test_get_animation_from_frames():
+    base_path = os.path.join("..", "test_data")
+    image_directory = utils.get_path("ogg", "kb42", "20180907")
+    test_directory = base_path + image_directory
+
+    all_frames = utils.get_hdu_lists(image_directory)
+    unique_block_list = list(set(utils.read_keywords_from_hdu_lists(all_frames, 'BLKUID')))
+
+    for block in unique_block_list:
+        output_path = os.path.join('.', 'output', block)
+        frames = get_frames_in_block(all_frames, block)
+        create_animation_from_frames(frames, output_path)

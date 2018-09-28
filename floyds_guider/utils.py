@@ -2,8 +2,11 @@ import datetime
 import os
 from glob import glob
 from xml.etree import ElementTree
+
 import requests
 from pandas import read_table
+import tempfile
+from fits2image import conversions
 
 import numpy as np
 from astropy.io import fits
@@ -20,6 +23,7 @@ MINIMUM_GOOD_FILE_SIZE = 100000  # in bytes
 def convert_to_safe_filename(unsafe_string):
     valid_filename_characters = "-_.(){letters}{numbers}".format(letters=string.ascii_letters, numbers=string.digits)
     return ''.join(character for character in unsafe_string if character in valid_filename_characters)
+
 
 
 def read_keywords_from_fits_files(fits_file_paths, keyword):
@@ -100,7 +104,7 @@ def get_site_from_camera_code(camera_code):
 
 def get_guider_camera_codes(camera_type = 13):
     """
-    Get all FLOYDS guider camera codes from ConfigDB
+    Get all FLOYDS autoguider camera codes and corresponding sites from ConfigDB
 
     :param camera_type: ConfigDB camera type id (http://configdb.lco.gtn/cameratypes/)
     :return: dictionary of the form {camera_code : site}
@@ -130,16 +134,60 @@ def get_path(site_code, camera_code, observation_date):
 
     base_path = os.path.join("/", "archive", "engineering")
     guide_frames_path = os.path.join(base_path, str(site_code), str(camera_code),
-                                     str(observation_date), "raw")
+                                     str(observation_date), "raw/*")
     return guide_frames_path
 
 
 def get_files(path):
-    frames = glob(path)
+    frames = sorted(glob(path))
     # Reject empty fits files
     frames = [frame for frame in frames if os.path.getsize(frame) > MINIMUM_GOOD_FILE_SIZE]
     return frames
 
+def open_fits_file(filename):
+    """
+    Opens a fits.fz file
+    """
+    base_filename, file_extension = os.path.splitext(os.path.basename(filename))
+    if file_extension == '.fz':
+        with tempfile.TemporaryDirectory() as tmpdirname:
+            output_filename = os.path.join(tmpdirname, base_filename)
+            os.system('funpack -O {0} {1}'.format(output_filename, filename))
+            hdulist = fits.open(output_filename, 'readonly')
+    else:
+        hdulist = fits.open(filename, 'readonly')
+
+    return hdulist
+
+def get_hdu_lists(path):
+    """
+    Returns a list of hdu_lists corresponding to fits files
+    """
+    frames = sorted(glob(path))
+    frames = [open_fits_file(frame) for frame in frames if os.path.getsize(frame) > MINIMUM_GOOD_FILE_SIZE]
+    return frames
+
+def read_keywords_from_hdu_lists(hdu_lists, keyword):
+    """
+    Loops through the list of FITS hdu_lists, reading in
+    the fits header keyword and returning this as a list
+    """
+    keywords = [hdu_list[0].header[keyword] for hdu_list in hdu_lists]
+    return keywords
+
+def create_animation_from_frames(frames, output_path, fps=10, height=1000, width=1000):
+    """
+    Given a set of frames, create a GIF animation.
+    """
+    writer = imageio.get_writer(output_path + '.gif', fps = fps)
+
+    for frame in frames:
+        with NamedTemporaryFile() as fp:
+            conversions.fits_to_jpg(frame, fp.name, width=width, height=height)
+            writer.append_data(imageio.imread(fp))
+
+    writer.close()
+    logger.debug("Finished processing animation.")
 
 def get_default_dayobs(site):
     if 'ogg' in site:
@@ -168,7 +216,7 @@ def get_science_exposures(frames):
 
 
 def get_frames_in_block(frames, block_id):
-    block_ids = read_keywords_from_fits_files(frames, 'BLKUID')
+    block_ids = read_keywords_from_hdu_lists(frames, 'BLKUID')
     return [frame for frame_block_id, frame in zip(block_ids, frames) if frame_block_id == block_id]
 
 
