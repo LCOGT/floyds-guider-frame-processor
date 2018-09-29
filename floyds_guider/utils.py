@@ -188,6 +188,23 @@ def create_animation_from_frames(frames, output_path, fps=10, height=1000, width
     writer.close()
     logger.debug("Finished processing animation.")
 
+def get_science_exposures_in_block(block_id):
+    """
+    Returns a list of science exposures for a given block
+    """
+    lake_block_url = "http://lake.lco.gtn/blocks/"
+    block_str = str(block_id)
+    results = requests.get(lake_block_url + block_str).json()
+
+    exposures = []
+
+    for molecule in results['molecules']:
+        for event in molecule['events']:
+            if event['completed_exposures']:
+                exposures.append(event)
+
+    return exposures
+
 def get_default_dayobs(site):
     if 'ogg' in site:
         # Default day-obs is yesterday
@@ -210,7 +227,7 @@ def get_first_acquisition_frame(guider_frames):
 
 
 def get_science_exposures(frames):
-    obstypes = read_keywords_from_fits_files(frames, 'OBSTYPE')
+    obstypes = read_keywords_from_hdu_lists(frames, 'OBSTYPE')
     return [frame for obstype, frame in zip(obstypes, frames) if obstype == 'SPECTRUM']
 
 
@@ -232,7 +249,7 @@ def get_first_guiding_frame(guider_frames):
 
 
 def get_guider_frames_for_science_exposure(guider_frames, ut_start, ut_stop):
-    guider_starts = read_keywords_from_fits_files(guider_frames, 'DATE-OBS')
+    guider_starts = read_keywords_from_hdu_lists(guider_frames, 'DATE-OBS')
     return [frame for guider_start, frame in zip(guider_starts, guider_frames)
             if in_date_range(to_datetime(guider_start), ut_start, ut_stop)]
 

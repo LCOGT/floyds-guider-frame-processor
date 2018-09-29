@@ -34,9 +34,22 @@ def test_get_animation_from_frames():
 
     all_frames = utils.get_hdu_lists(test_directory)
     assert len(all_frames) != 0
+
     unique_block_list = set(utils.read_keywords_from_hdu_lists(all_frames, 'BLKUID'))
 
+    science_exposures = []
     for block in unique_block_list:
-        output_path = os.path.join('.', block)
-        frames = utils.get_frames_in_block(all_frames, block)
+        science_exposures.extend(utils.get_science_exposures_in_block(block))
+
+    for exposure in science_exposures:
+        output_path = os.path.join('.', exposure['timestamp'])
+        frames = utils.get_guider_frames_for_science_exposure(all_frames, exposure['start'], exposure['end'])
+        if len(frames) == 0:
+            continue
         utils.create_animation_from_frames(frames, output_path)
+        assert os.path.exists(output_path + ".gif")
+        assert os.path.getsize(output_path + ".gif") > 500000
+
+def test_get_science_exposures_in_block():
+    exposures = utils.get_science_exposures_in_block("347128757")
+    assert len(exposures) == 3
