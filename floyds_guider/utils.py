@@ -19,7 +19,6 @@ import string
 import logging
 
 logger = logging.getLogger('floyds-guider-frames')
-
 MINIMUM_GOOD_FILE_SIZE = 100000  # in bytes
 
 
@@ -87,7 +86,8 @@ def extract_stats_from_xml_file(xml_file):
 
 def get_site_from_camera_code(camera_code):
     """
-    Returns a site, given an autoguider camera code
+    Returns a site, given a camera code. Uses LCO camera mapping file
+    available at: http://configdb.lco.gtn/camera_mappings/
 
     :param camera_code: camera code defined in ConfigDB (e.g. kb38)
     :return: LCO site where camera is located
@@ -96,15 +96,16 @@ def get_site_from_camera_code(camera_code):
     camera_mappings = read_table(camera_mapping_url, sep='\s+', header=0, escapechar='#')
 
     site_list = camera_mappings[' Site'].tolist()
-    camera_list = camera_mappings['Autoguider'].tolist()
+    ag_camera_list = camera_mappings['Autoguider'].tolist()
+    camera_list = camera_mappings['Camera'].tolist()
 
-    for site, camera in zip(site_list, camera_list):
-        if camera == camera_code:
+    for site, ag_camera, camera in zip(site_list, ag_camera_list, camera_list):
+        if (ag_camera == camera_code) or (camera == camera_code):
             return site
     else:
         return None
 
-def get_guider_camera_codes(camera_type = 13):
+def get_camera_codes(camera_type):
     """
     Get all FLOYDS autoguider camera codes and corresponding sites from ConfigDB
 
@@ -125,8 +126,8 @@ def get_guider_camera_codes(camera_type = 13):
 
 def get_path(site_code, camera_code, observation_date):
     """
-    Get path to FLOYDS guider frames on Chanunpa given site code, camera code,
-    and observation date
+    Get path (in glob form) to FLOYDS frames on Chanunpa given site code,
+    camera code, and observation date
 
     :param site_code: LCO 3-letter site code
     :param camera_code: camera code defined in ConfigDB (e.g. kb38)
@@ -135,9 +136,9 @@ def get_path(site_code, camera_code, observation_date):
     """
 
     base_path = os.path.join("/", "archive", "engineering")
-    guide_frames_path = os.path.join(base_path, str(site_code), str(camera_code),
+    frames_path = os.path.join(base_path, str(site_code), str(camera_code),
                                      str(observation_date), "raw/*")
-    return guide_frames_path
+    return frames_path
 
 
 def get_hdu_lists(path):
@@ -166,13 +167,18 @@ def open_fits_file(filename):
 
 def read_keywords_from_hdu_lists(hdu_lists, keyword):
     """
-    Loops through the list of FITS hdu_lists, reading in
-    the fits header keyword and returning this as a list
+    Retrieves keyword(s) from a single HDUList or a
+    list of HDULists
+    :param hdu_lists: Single HDUList or list of HDULists
+    :param keyword: Header keyword to retrieve
+    :return: Single value, or list of values
     """
-    keywords = [hdu_list[0].header[keyword] for hdu_list in hdu_lists]
-    return keywords
+    if isinstance(hdu_lists, fits.hdu.hdulist.HDUList):
+        return hdu_lists[0].header[keyword]
 
-def create_animation_from_frames(frames, output_path, fps=10, height=1000, width=1000):
+    return [hdu_list[0].header[keyword] for hdu_list in hdu_lists]
+
+def create_animation_from_frames(frames, output_path, fps=10, height=500, width=500):
     """
     Given a set of frames, create a GIF animation.
     """
@@ -188,22 +194,6 @@ def create_animation_from_frames(frames, output_path, fps=10, height=1000, width
     writer.close()
     logger.debug("Finished processing animation.")
 
-def get_science_exposures_in_block(block_id):
-    """
-    Returns a list of science exposures for a given block
-    """
-    lake_block_url = "http://lake.lco.gtn/blocks/"
-    block_str = str(block_id)
-    results = requests.get(lake_block_url + block_str).json()
-
-    exposures = []
-
-    for molecule in results['molecules']:
-        for event in molecule['events']:
-            if event['completed_exposures']:
-                exposures.append(event)
-
-    return exposures
 
 def get_default_dayobs(site):
     if 'ogg' in site:
@@ -213,6 +203,10 @@ def get_default_dayobs(site):
         day_obs = datetime.datetime.now()
     return day_obs.strftime('%Y%m%d')
 
+def get_tracking_guider_frames(guider_frames):
+    guider_states = read_keywords_from_hdu_lists(guider_frames, 'AGSTATE')
+    return [frame for state, frame in zip(guider_states, guider_frames) if 'GUIDING' in state]
+
 
 def get_guider_frames_in_molecule(frames, molecule):
     molecule_ids = read_keywords_from_fits_files(frames, 'MOLUID')
@@ -220,9 +214,10 @@ def get_guider_frames_in_molecule(frames, molecule):
 
 
 def get_first_acquisition_frame(guider_frames):
-    guider_states = read_keywords_from_fits_files(guider_frames, 'AGSTATE')
+    guider_states = read_keywords_from_hdu_lists(guider_frames, 'AGSTATE')
     acquisition_frames = [frame for state, frame in zip(guider_states, guider_frames) if 'ACQUIRING' in state]
-    acquisition_frames.sort()
+    acquisition_frames.sort(key = lambda frame:frame[0].header['DATE-OBS'])
+
     return acquisition_frames[0] if len(acquisition_frames) > 0 else None
 
 
