@@ -15,8 +15,8 @@ def test_get_cameras():
 
     #13 = all floyds autoguider cameras
     #4 = all floyds sci-cams
-    guide_camera_dict = utils.get_camera_codes(13)
-    sci_camera_dict = utils.get_camera_codes(4)
+    guide_camera_dict = utils.get_camera_codes("http://configdb.lco.gtn/cameras/", 13)
+    sci_camera_dict = utils.get_camera_codes("http://configdb.lco.gtn/cameras/", 4)
 
     for code in known_guide_mapping.keys():
         assert guide_camera_dict[code] == known_guide_mapping[code]
@@ -30,12 +30,12 @@ def test_get_path():
 
     assert known_path == test_path
 
-def test_get_hdu_lists():
+def test_get_good_frames_from_path():
     base_path = os.path.join("..", "test_data")
     floyds_image_directory = utils.get_path("ogg", "floyds01", "20180907")
 
     full_path = base_path + floyds_image_directory
-    hdu_lists = utils.get_hdu_lists(full_path)
+    hdu_lists = utils.get_good_frames_from_path(full_path)
 
     for hdu_list in hdu_lists:
         assert isinstance(hdu_list, fits.hdu.hdulist.HDUList)
@@ -104,7 +104,7 @@ def test_read_keywords_from_hdu_lists():
 
     assert utils.read_keywords_from_hdu_lists(hdu_lists, 'BLKUID') == [id for id in range(0,4)]
 
-
+#End-to-end test
 def test_get_animation_from_frames():
     base_path = os.path.join("..", "test_data")
     guide_image_directory = utils.get_path("ogg", "kb42", "20180907")
@@ -113,8 +113,8 @@ def test_get_animation_from_frames():
     test_guide_directory = base_path + guide_image_directory
     test_sci_directory = base_path + floyds_image_directory
 
-    all_guide_frames = utils.get_hdu_lists(test_guide_directory)
-    all_floyds_frames = utils.get_hdu_lists(test_sci_directory)
+    all_guide_frames = utils.get_good_frames_from_path(test_guide_directory)
+    all_floyds_frames = utils.get_good_frames_from_path(test_sci_directory)
 
     assert len(all_guide_frames) != 0
     assert len(all_floyds_frames) != 0

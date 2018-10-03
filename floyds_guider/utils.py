@@ -105,10 +105,12 @@ def get_site_from_camera_code(camera_code):
     else:
         return None
 
-def get_camera_codes(camera_type):
+def get_camera_codes(config_root_url, camera_type):
     """
-    Get all FLOYDS autoguider camera codes and corresponding sites from ConfigDB
+    Get all camera codes and corresponding sites for a given camera
+    type id from ConfigDB
 
+    :param config_root_url: url to configuration database (e.g. http://configdb.lco.gtn/cameras/)
     :param camera_type: ConfigDB camera type id (http://configdb.lco.gtn/cameratypes/)
     :return: dictionary of the form {camera_code : site}
     """
@@ -126,27 +128,28 @@ def get_camera_codes(camera_type):
 
 def get_path(site_code, camera_code, observation_date):
     """
-    Get path (in glob form) to FLOYDS frames on Chanunpa given site code,
+    Get path (in glob form) to frames on Chanunpa given site code,
     camera code, and observation date
 
     :param site_code: LCO 3-letter site code
     :param camera_code: camera code defined in ConfigDB (e.g. kb38)
     :param observation_date: date in YYYYMMDD format
-    :return: path to floyds guider frames on Chanunpa
+    :return: path to frames on Chanunpa
     """
 
     base_path = os.path.join("/", "archive", "engineering")
     frames_path = os.path.join(base_path, str(site_code), str(camera_code),
-                                     str(observation_date), "raw/*")
+                                     str(observation_date), "raw", "*")
     return frames_path
 
 
-def get_hdu_lists(path):
+def get_good_frames_from_path(path):
     """
-    Given a directory of fits files, return a list of hdulists
+    Given a directory of fits.fz files, open them and return a list
+    of frames
     """
     frames = sorted(glob(path))
-    # Reject empty fits files
+    # Reject empty images
     frames = [open_fits_file(frame) for frame in frames if os.path.getsize(frame) > MINIMUM_GOOD_FILE_SIZE]
     return frames
 
@@ -204,6 +207,10 @@ def get_default_dayobs(site):
     return day_obs.strftime('%Y%m%d')
 
 def get_tracking_guider_frames(guider_frames):
+    """
+    Given a set of guide frames, return all that are 'guiding' - e.g.
+    locked onto a target.
+    """
     guider_states = read_keywords_from_hdu_lists(guider_frames, 'AGSTATE')
     return [frame for state, frame in zip(guider_states, guider_frames) if 'GUIDING' in state]
 
