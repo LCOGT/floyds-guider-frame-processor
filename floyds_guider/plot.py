@@ -20,6 +20,7 @@ def make_guide_info_plots(guider_frames, ut_start, output_basename):
     """Generate plots from FITS guide images"""
     if len(guider_frames) == 0:
         logger.error('No guider frames taken during exposure!')
+        plot_file_names = {}
     else:
         relative_guider_times = utils.get_relative_guider_observation_times(guider_frames, ut_start)
         guider_states = utils.read_keywords_from_fits_files(guider_frames, 'AGSTATE')
@@ -54,4 +55,4 @@ def make_guide_info_plots(guider_frames, ut_start, output_basename):
 
         make_plot_for_webpage(stats['x_center'], stats['y_center'], 'X Center (pixels)', 'Y Center (pixels)',
                               plot_file_names['position'])
-        return plot_file_names
+    return plot_file_names
