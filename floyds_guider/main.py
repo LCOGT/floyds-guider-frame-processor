@@ -112,6 +112,29 @@ def link_frames_to_images_directory(frames, image_directory):
             logger.error('Could not link {frame}: {exception}'.format(frame=jpg_file, exception=e))
 
 
+def process_block(floyds_frames, guider_frames, observation_block, output_directory):
+    floyds_frames_for_block = utils.get_frames_in_block(floyds_frames, observation_block)
+    guider_frames_for_block = utils.get_frames_in_block(guider_frames, observation_block)
+
+    proposal_id = utils.get_proposal_id(floyds_frames_for_block)
+    summary_block_root_name = '_'.join([utils.convert_to_safe_filename(proposal_id),
+                                        utils.convert_to_safe_filename(observation_block)])
+    path_for_summary_for_block = os.path.join(output_directory, summary_block_root_name)
+    if not os.path.exists(path_for_summary_for_block):
+        os.mkdir(path_for_summary_for_block)
+
+    acquisition_and_first_guiding_frames = get_acquisition_and_first_guiding_images(floyds_frames_for_block,
+                                                                                    guider_frames_for_block,
+                                                                                    path_for_summary_for_block)
+
+    summary_plots = make_summary_plots(floyds_frames_for_block, guider_frames_for_block, path_for_summary_for_block)
+
+    make_guider_summary_webpage(summary_block_root_name, path_for_summary_for_block,
+                                acquisition_and_first_guiding_frames, summary_plots, floyds_frames_for_block)
+    make_tar_file_of_guider_frames(guider_frames_for_block, summary_plots, path_for_summary_for_block,
+                                   summary_block_root_name + '.tar')
+
+
 def process_guider_frames():
     parser = argparse.ArgumentParser(description='Make summaries of a night of FLOYDS observations and make a '
                                                  'tar file with all of the guider frames during an exposure')
@@ -142,24 +165,8 @@ def process_guider_frames():
 
     observation_blocks = utils.read_keywords_from_fits_files(floyds_frames, 'BLKUID')
     for observation_block in set(observation_blocks):
-
-        floyds_frames_for_block = utils.get_frames_in_block(floyds_frames, observation_block)
-        guider_frames_for_block = utils.get_frames_in_block(guider_frames, observation_block)
-
-        proposal_id = utils.get_proposal_id(floyds_frames_for_block)
-        summary_block_root_name = '_'.join([utils.convert_to_safe_filename(proposal_id),
-                                            utils.convert_to_safe_filename(observation_block)])
-        path_for_summary_for_block = os.path.join(directory_for_summary_on_dayobs, summary_block_root_name)
-        if not os.path.exists(path_for_summary_for_block):
-            os.mkdir(path_for_summary_for_block)
-
-        acquisition_and_first_guiding_frames = get_acquisition_and_first_guiding_images(floyds_frames_for_block,
-                                                                                        guider_frames_for_block,
-                                                                                        path_for_summary_for_block)
-
-        summary_plots = make_summary_plots(floyds_frames_for_block, guider_frames_for_block, path_for_summary_for_block)
-
-        make_guider_summary_webpage(summary_block_root_name, path_for_summary_for_block,
-                                    acquisition_and_first_guiding_frames, summary_plots, floyds_frames_for_block)
-        make_tar_file_of_guider_frames(guider_frames_for_block, summary_plots, path_for_summary_for_block,
-                                       summary_block_root_name + '.tar')
+        try:
+            process_block(floyds_frames, guider_frames, observation_block, directory_for_summary_on_dayobs)
+        except Exception as e:
+            logger.error('Exception produced for Block ID: {block}: {execption}'.format(block=observation_block,
+                                                                                        exception=e))
