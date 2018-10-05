@@ -112,7 +112,7 @@ def get_camera_codes(config_root_url, camera_type):
 
     :param config_root_url: url to configuration database (e.g. http://configdb.lco.gtn/cameras/)
     :param camera_type: ConfigDB camera type id (http://configdb.lco.gtn/cameratypes/)
-    :return: dictionary of the form {camera_code : site}
+    :return: dictionary of the form {site: camera_code}
     """
     root_url = "http://configdb.lco.gtn/cameras/"
     parameters = dict(camera_type=str(camera_type))
@@ -122,7 +122,7 @@ def get_camera_codes(config_root_url, camera_type):
     camera_info = {}
 
     for result in results:
-        camera_info[result['code']] = get_site_from_camera_code(result['code'])
+        camera_info[get_site_from_camera_code(result['code'])] = result['code']
 
     return camera_info
 

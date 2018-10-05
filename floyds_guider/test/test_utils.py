@@ -7,11 +7,11 @@ import astropy.io.fits as fits
 logging.getLogger("floyds-guider-frames")
 
 def test_get_cameras():
-    known_guide_mapping = {'kb37': None,
-                           'kb38': 'coj',
-                           'kb42': 'ogg'}
-    known_sci_mapping = {'floyds01':'ogg',
-                         'floyds02':'coj'}
+    known_guide_mapping = {None:'kb37',
+                           'coj':'kb38',
+                           'ogg':'kb42'}
+    known_sci_mapping = {'ogg':'floyds01',
+                         'coj':'floyds02'}
 
     #13 = all floyds autoguider cameras
     #4 = all floyds sci-cams
