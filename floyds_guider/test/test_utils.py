@@ -53,27 +53,24 @@ def test_get_first_acquisition_frame():
     time_2 = '2018-09-08T08:31:40.549'
     time_3 = '2018-09-08T08:41:40.549'
 
-    headers = []
-    headers.append(fits.Header([('AGSTATE', 'GUIDING_CLOSED_LOOP'), ('DATE-OBS', time_1)]))
-    headers.append(fits.Header([('AGSTATE', 'ACQUIRING'), ('DATE-OBS', time_3)]))
-    headers.append(fits.Header([('AGSTATE', 'ACQUIRING'), ('DATE-OBS', time_2)]))
+    header_info = ([('AGSTATE', 'GUIDING_CLOSED_LOOP'), ('DATE-OBS', time_1)],
+                   [('AGSTATE', 'ACQUIRING'), ('DATE-OBS', time_3)],
+                   [('AGSTATE', 'ACQUIRING'), ('DATE-OBS', time_2)])
 
-    hdu_lists = [fits.HDUList(fits.PrimaryHDU(header=header)) for header in headers]
-
-    first_acquisition_frame = utils.get_first_acquisition_frame(hdu_lists)
+    test_frames = create_test_frames_from_header_info(header_info)
+    first_acquisition_frame = utils.get_first_acquisition_frame(test_frames)
 
     assert utils.read_keywords_from_frames(first_acquisition_frame, 'DATE-OBS') == time_2
 
 def test_get_science_exposures():
-    headers = []
-    headers.append(fits.Header([('OBSTYPE', 'SPECTRUM'), ('ID', 0)]))
-    headers.append(fits.Header([('OBSTYPE', 'IMAGE'), ('ID', 1)]))
-    headers.append(fits.Header([('OBSTYPE', 'IMAGE'), ('ID', 2)]))
-    headers.append(fits.Header([('OBSTYPE', 'SPECTRUM'), ('ID', 3)]))
 
+    header_info = ([('OBSTYPE', 'SPECTRUM'), ('ID', 0)],
+                   [('OBSTYPE', 'IMAGE'), ('ID', 1)],
+                   [('OBSTYPE', 'IMAGE'), ('ID', 2)],
+                   [('OBSTYPE', 'SPECTRUM'), ('ID', 3)])
 
-    hdu_lists = [fits.HDUList(fits.PrimaryHDU(header=header)) for header in headers]
-    science_frames = utils.get_science_exposures(hdu_lists)
+    test_frames = create_test_frames_from_header_info(header_info)
+    science_frames = utils.get_science_exposures(test_frames)
 
     assert utils.read_keywords_from_frames(science_frames, 'ID') == [0, 3]
 
@@ -81,30 +78,29 @@ def test_get_guider_frames_for_science_exposure():
     ut_start = utils.to_datetime('2018-09-08T08:21:40.549')
     ut_stop = utils.to_datetime('2018-09-08T08:31:40.549')
 
-    headers = []
-    headers.append(fits.Header([('DATE-OBS', '2018-09-08T08:25:40.549'), ('BLKUID', 0)]))
-    headers.append(fits.Header([('DATE-OBS', '2018-09-08T08:37:40.549'), ('BLKUID', 1)]))
+    header_info = ([('DATE-OBS', '2018-09-08T08:25:40.549'), ('BLKUID', 0)],
+                   [('DATE-OBS', '2018-09-08T08:37:40.549'), ('BLKUID', 1)],
+                   [('DATE-OBS', '2018-09-08T08:22:43.549'), ('BLKUID', 2)])
 
-    guide_frames = [fits.HDUList(fits.PrimaryHDU(header=header)) for header in headers]
+    test_frames = create_test_frames_from_header_info(header_info)
+    guide_frames_for_exposure = utils.get_guider_frames_for_science_exposure(test_frames, ut_start, ut_stop)
 
-    guide_frames_for_exposure = utils.get_guider_frames_for_science_exposure(guide_frames, ut_start, ut_stop)
-
-    assert utils.read_keywords_from_frames(guide_frames_for_exposure, 'BLKUID') == [0]
+    assert utils.read_keywords_from_frames(guide_frames_for_exposure, 'BLKUID') == [0, 2]
 
 def test_get_tracking_guider_frames():
-    headers = [fits.Header([('AGSTATE', 'GUIDING_CLOSED_LOOP'), ('ID', id)]) for id in range(0,4)]
-    headers.append(fits.Header([('AGSTATE', 'ACQUIRING'), ('ID', 4)]))
-    hdu_lists = [fits.HDUList(fits.PrimaryHDU(header=header)) for header in headers]
+    header_info = [[('AGSTATE', 'GUIDING_CLOSED_LOOP'), ('ID', id)] for id in range(0,4)]
+    header_info.append([('AGSTATE', 'ACQUIRING'), ('ID', 4)])
 
-    tracking_frames = utils.get_tracking_guider_frames(hdu_lists)
+    test_frames = create_test_frames_from_header_info(header_info)
+    tracking_frames = utils.get_tracking_guider_frames(test_frames)
 
     assert utils.read_keywords_from_frames(tracking_frames, 'ID') == [id for id in range (0,4)]
 
 def test_read_keywords_from_frames():
-    headers = [fits.Header([('BLKUID', id)]) for id in range(0,4)]
-    hdu_lists = [fits.HDUList(fits.PrimaryHDU(header=header)) for header in headers]
+    headers = [[('BLKUID', id)] for id in range(0,4)]
+    test_frames = create_test_frames_from_header_info(headers)
 
-    assert utils.read_keywords_from_frames(hdu_lists, 'BLKUID') == [id for id in range(0,4)]
+    assert utils.read_keywords_from_frames(test_frames, 'BLKUID') == [id for id in range(0,4)]
 
 #End-to-end test
 def test_get_animation_from_frames():
@@ -140,3 +136,13 @@ def test_get_animation_from_frames():
         utils.create_animation_from_frames(frames_to_animate, output_path)
         assert os.path.exists(output_path + ".gif")
         assert os.path.getsize(output_path + ".gif") > 500000
+
+def create_test_frames_from_header_info(header_info_lists):
+    """
+    Given a list of of header key-value pair lists, create test frames
+    """
+    headers = []
+    for list in header_info_lists:
+        headers.append(fits.Header(list))
+
+    return [fits.HDUList(fits.PrimaryHDU(header=header)) for header in headers]
