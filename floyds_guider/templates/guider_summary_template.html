@@ -3,20 +3,26 @@
 <head>
     <meta charset="UTF-8">
     <title>{{ block_title }}</title>
+    <style>
+	    figure {display: inline-block;}
+    </style>
+
 </head>
 <body>
-<h1><font COLOR=red> Quick summary <br> {{ block_title }} </font></h1>
+<div class="content" align="center">
+    <h1><font COLOR=red> Quick summary <br> {{ block_title }} </font></h1>
+</div>
 {% for molecule in molecules %}
 <div class="content">
-    <figure>
+    <figure style="text-align: center">
         <img title="Acquisition image for Molecule {{molecule['id']}}"
-             src="{{molecule['acquisition_image']}}" alt="Acquisition Image" style="width:100%">
-        <figcaption>"Acquisition image for Molecule {{molecule['id']}}"</figcaption>
+             src="{{molecule['acquisition_image']}}" alt="Acquisition Image" style="width:40%">
+        <figcaption><h2>Acquisition image for Molecule {{molecule['id']}}</h2></figcaption>
     </figure>
-    <figure>
+    <figure style="text-align: center">
         <img title="First Guiding Image for Molecule {{molecule['id']}}"
-             src="{{molecule['first_guiding_image']}}" alt="First Guiding Image" style="width:100%">
-        <figcaption>"First Guiding Image for Molecule {{molecule['id']}}"</figcaption>
+             src="{{molecule['first_guiding_image']}}" alt="First Guiding Image" style="width:40%">
+        <figcaption><h2>First Guiding Image for Molecule {{molecule['id']}}</h2></figcaption>
     </figure>
 </div>
 <div class="clear: both"></div>
@@ -35,12 +41,14 @@
     {% endfor %}
 <div class="clear: both"></div>
 {% endfor %}
-<h2> FLOYDS Frames </h2>
+<div class="content" align="center">
+    <h2> FLOYDS Frames </h2>
+</div>
 {% for frame in floyds_frames %}
 <div class=content>
-    <figure>
+    <figure style="text-align: center">
         <img src="{{frame}}" style="width:90%">
-        <figcaption>{{frame}}</figcaption>
+        <figcaption><h2>{{frame}}</h2></figcaption>
     </figure>
 </div>
 {% endfor %}
