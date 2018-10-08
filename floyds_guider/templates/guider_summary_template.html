@@ -2,52 +2,47 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>{{block_title}}</title>
+    <title>{{ block_title }}</title>
 </head>
-<style type=text/css>{{style_string}}</style>
 <body>
-<h1><font COLOR=red> Quick summary <br> {{block_title}} </font></h1>
+<h1><font COLOR=red> Quick summary <br> {{ block_title }} </font></h1>
 {% for molecule in molecules %}
-<div class="row">
-  <div class="column">
-    <img title="Acquisition image for Molecule {{molecule['id']}}"
-         src="{{molecule['acquisition_image']}}" alt="Acquisition Image" style="width:100%">
-  </div>
-  <div class="column">
-    <img title="First Guiding Image for Molecule {{molecule['id']}}"
-         src="{{molecule['first_guiding_image']}}" alt="First Guiding Image" style="width:100%">
-  </div>
+<div class="content">
+    <figure>
+        <img title="Acquisition image for Molecule {{molecule['id']}}"
+             src="{{molecule['acquisition_image']}}" alt="Acquisition Image" style="width:100%">
+        <figcaption>"Acquisition image for Molecule {{molecule['id']}}"</figcaption>
+    </figure>
+    <figure>
+        <img title="First Guiding Image for Molecule {{molecule['id']}}"
+             src="{{molecule['first_guiding_image']}}" alt="First Guiding Image" style="width:100%">
+        <figcaption>"First Guiding Image for Molecule {{molecule['id']}}"</figcaption>
+    </figure>
 </div>
+<div class="clear: both"></div>
     {% for summary_plot in summary_plots %}
-    <div class="row"><h2>Guiding Summary for {{summary_plot["science_frame_name"]}} </h2></div>
-    <div class="row">
-      <div class="column">
-        <img src="{{summary_plot['total_counts']}}" style="width:100%">
-      </div>
-      <div class="column">
-        <img src="{{summary_plot['fwhm']}}" style="width:100%">
-      </div>
-      <div class="column">
-        <img src="{{summary_plot['guide_state']}}" style="width:100%">
-      </div>
-    </div>
-    <div class="row">
-      <div class="column">
-        <img src="{{summary_plot['position']}}" style="width:100%">
-      </div>
-      <div class="column">
-        <img src="{{summary_plot['x_position']}}" style="width:100%">
-      </div>
-      <div class="column">
-        <img src="{{summary_plot['y_position']}}" style="width:100%">
-      </div>
-    </div>
+<div class="content" align="center"><h2>Guiding Summary for {{summary_plot["science_frame_name"]}} </h2></div>
+<div class="content" align="center">
+    <img src="{{summary_plot['total_counts']}}" style="width:30%">
+    <img src="{{summary_plot['fwhm']}}" style="width:30%">
+    <img src="{{summary_plot['guide_state']}}" style="width:30%">
+</div>
+<div class="content" align="center">
+  <img src="{{summary_plot['position']}}" style="width:30%">
+  <img src="{{summary_plot['x_position']}}" style="width:30%">
+  <img src="{{summary_plot['y_position']}}" style="width:30%">
+</div>
     {% endfor %}
+<div class="clear: both"></div>
 {% endfor %}
 <h2> FLOYDS Frames </h2>
 {% for frame in floyds_frames %}
-<div class="row">
-    <img src="{{frame}}" style="width:100%">
+<div class=content>
+    <figure>
+        <img src="{{frame}}" style="width:90%">
+        <figcaption>{{frame}}</figcaption>
+    </figure>
+
 </div>
 {% endfor %}
 </body>
