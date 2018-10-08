@@ -88,7 +88,7 @@ def make_tar_file_of_guider_frames(guider_frames, summary_plots, summary_output_
 
 def make_guider_summary_webpage(summary_root_name, output_directory, molecule_info, summary_plots, floyds_frames):
     template = JINJA_ENVIRONMENT.get_template('guider_summary_template.html')
-    template_css = os.path.join(pkg_resources.resource_filename('floyds_guider'), 'templates', 'styles.css')
+    template_css = pkg_resources.resource_filename('floyds_guider', os.path.join('templates', 'styles.css'))
     with open(template_css) as css_file:
         css_style = css_file.read().decode('utf-8')
     jpgs = [utils.convert_raw_fits_path_to_jpg(frame) for frame in floyds_frames]
@@ -172,5 +172,5 @@ def process_guider_frames():
         try:
             process_block(floyds_frames, guider_frames, observation_block, directory_for_summary_on_dayobs)
         except Exception as e:
-            logger.error('Exception produced for Block ID: {block}: {execption}'.format(block=observation_block,
+            logger.error('Exception produced for Block ID: {block}: {exception}'.format(block=observation_block,
                                                                                         exception=e))
