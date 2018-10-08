@@ -167,18 +167,18 @@ def open_fits_file(filename):
 
     return hdulist
 
-def read_keywords_from_hdu_lists(hdu_lists, keyword):
+def read_keywords_from_frames(frames, keyword):
     """
-    Retrieves keyword(s) from a single HDUList or a
-    list of HDULists
-    :param hdu_lists: Single HDUList or list of HDULists
+    Retrieves keyword(s) from a single frame (HDUList) or a
+    list of frames (HDULists)
+    :param frames: Single HDUList or list of HDULists
     :param keyword: Header keyword to retrieve
     :return: Single value, or list of values
     """
-    if isinstance(hdu_lists, fits.hdu.hdulist.HDUList):
-        return hdu_lists[0].header[keyword]
+    if isinstance(frames, fits.hdu.hdulist.HDUList):
+        return frames[0].header[keyword]
 
-    return [hdu_list[0].header[keyword] for hdu_list in hdu_lists]
+    return [frame[0].header[keyword] for frame in frames]
 
 def create_animation_from_frames(frames, output_path, fps=10, height=500, width=500):
     """
@@ -210,7 +210,7 @@ def get_tracking_guider_frames(guider_frames):
     Given a set of guide frames, return all that are 'guiding' - e.g.
     locked onto a target.
     """
-    guider_states = read_keywords_from_hdu_lists(guider_frames, 'AGSTATE')
+    guider_states = read_keywords_from_frames(guider_frames, 'AGSTATE')
     return [frame for state, frame in zip(guider_states, guider_frames) if 'GUIDING' in state]
 
 
@@ -220,7 +220,7 @@ def get_guider_frames_in_molecule(frames, molecule):
 
 
 def get_first_acquisition_frame(guider_frames):
-    guider_states = read_keywords_from_hdu_lists(guider_frames, 'AGSTATE')
+    guider_states = read_keywords_from_frames(guider_frames, 'AGSTATE')
     acquisition_frames = [frame for state, frame in zip(guider_states, guider_frames) if 'ACQUIRING' in state]
     acquisition_frames.sort(key = lambda frame:frame[0].header['DATE-OBS'])
 
@@ -228,12 +228,12 @@ def get_first_acquisition_frame(guider_frames):
 
 
 def get_science_exposures(frames):
-    obstypes = read_keywords_from_hdu_lists(frames, 'OBSTYPE')
+    obstypes = read_keywords_from_frames(frames, 'OBSTYPE')
     return [frame for obstype, frame in zip(obstypes, frames) if obstype == 'SPECTRUM']
 
 
 def get_frames_in_block(frames, block_id):
-    block_ids = read_keywords_from_hdu_lists(frames, 'BLKUID')
+    block_ids = read_keywords_from_frames(frames, 'BLKUID')
     return [frame for frame_block_id, frame in zip(block_ids, frames) if frame_block_id == block_id]
 
 
@@ -250,7 +250,7 @@ def get_first_guiding_frame(guider_frames):
 
 
 def get_guider_frames_for_science_exposure(guider_frames, ut_start, ut_stop):
-    guider_starts = read_keywords_from_hdu_lists(guider_frames, 'DATE-OBS')
+    guider_starts = read_keywords_from_frames(guider_frames, 'DATE-OBS')
     return [frame for guider_start, frame in zip(guider_starts, guider_frames)
             if in_date_range(to_datetime(guider_start), ut_start, ut_stop)]
 
