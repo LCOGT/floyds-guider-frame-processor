@@ -49,18 +49,14 @@ def test_get_site_from_camera_code():
     assert utils.get_site_from_camera_code(bad_camera_code) is None
 
 def test_get_first_acquisition_frame():
-    time_1 = '2018-09-08T08:21:40.549'
-    time_2 = '2018-09-08T08:31:40.549'
-    time_3 = '2018-09-08T08:41:40.549'
-
-    header_info = ([('AGSTATE', 'GUIDING_CLOSED_LOOP'), ('DATE-OBS', time_1)],
-                   [('AGSTATE', 'ACQUIRING'), ('DATE-OBS', time_3)],
-                   [('AGSTATE', 'ACQUIRING'), ('DATE-OBS', time_2)])
+    header_info = ([('AGSTATE', 'GUIDING_CLOSED_LOOP'), ('DATE-OBS', '2018-09-08T08:21:40.549')],
+                   [('AGSTATE', 'ACQUIRING'), ('DATE-OBS', '2018-09-08T08:41:40.549')],
+                   [('AGSTATE', 'ACQUIRING'), ('DATE-OBS', '2018-09-08T08:31:40.549')])
 
     test_frames = create_test_frames_from_header_info(header_info)
     first_acquisition_frame = utils.get_first_acquisition_frame(test_frames)
 
-    assert utils.read_keywords_from_frames(first_acquisition_frame, 'DATE-OBS') == time_2
+    assert utils.read_keywords_from_frames(first_acquisition_frame, 'DATE-OBS') == '2018-09-08T08:31:40.549'
 
 def test_get_science_exposures():
 
@@ -86,6 +82,26 @@ def test_get_guider_frames_for_science_exposure():
     guide_frames_for_exposure = utils.get_guider_frames_for_science_exposure(test_frames, ut_start, ut_stop)
 
     assert utils.read_keywords_from_frames(guide_frames_for_exposure, 'BLKUID') == [0, 2]
+
+def test_get_guider_frames_in_molecule():
+    header_info = ([('DATE-OBS', '2018-09-08T08:25:40.549'), ('MOLUID', '1337'), ('BLKUID', 0)],
+                   [('DATE-OBS', '2018-09-08T08:37:40.549'), ('MOLUID', '1337'), ('BLKUID', 1)],
+                   [('DATE-OBS', '2018-09-08T08:22:43.549'), ('MOLUID', '1338'), ('BLKUID', 2)])
+
+    test_frames = create_test_frames_from_header_info(header_info)
+    guide_frames_for_molecule = utils.get_guider_frames_in_molecule(test_frames, "1337")
+
+    assert utils.read_keywords_from_frames(guide_frames_for_molecule, 'BLKUID') == [0, 1]
+
+def test_get_first_guiding_frame():
+    header_info = ([('AGSTATE', 'GUIDING_CLOSED_LOOP'), ('DATE-OBS', '2018-09-08T08:51:40.549')],
+                   [('AGSTATE', 'GUIDING_CLOSED_LOOP'), ('DATE-OBS', '2018-09-08T08:41:40.549')],
+                   [('AGSTATE', 'GUIDING_CLOSED_LOOP'), ('DATE-OBS', '2018-09-08T08:31:40.549')])
+
+    test_frames = create_test_frames_from_header_info(header_info)
+    first_guiding_frame = utils.get_first_guiding_frame(test_frames)
+
+    assert utils.read_keywords_from_frames(first_guiding_frame, 'DATE-OBS') == '2018-09-08T08:31:40.549'
 
 def test_get_tracking_guider_frames():
     header_info = [[('AGSTATE', 'GUIDING_CLOSED_LOOP'), ('ID', id)] for id in range(0,4)]

@@ -215,7 +215,7 @@ def get_tracking_guider_frames(guider_frames):
 
 
 def get_guider_frames_in_molecule(frames, molecule):
-    molecule_ids = read_keywords_from_fits_files(frames, 'MOLUID')
+    molecule_ids = read_keywords_from_frames(frames, 'MOLUID')
     return [frame for molecule_id, frame in zip(molecule_ids, frames) if molecule_id == molecule]
 
 
@@ -243,9 +243,9 @@ def get_proposal_id(frames):
 
 
 def get_first_guiding_frame(guider_frames):
-    guider_states = read_keywords_from_fits_files(guider_frames, 'AGSTATE')
+    guider_states = read_keywords_from_frames(guider_frames, 'AGSTATE')
     guiding_frames = [frame for state, frame in zip(guider_states, guider_frames) if 'GUID' in state]
-    guiding_frames.sort()
+    guiding_frames.sort(key = lambda frame:frame[0].header['DATE-OBS'])
     return guiding_frames[0] if len(guiding_frames) > 0 else None
 
 
