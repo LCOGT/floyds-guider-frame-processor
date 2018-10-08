@@ -90,7 +90,7 @@ def make_guider_summary_webpage(summary_root_name, output_directory, molecule_in
     template = JINJA_ENVIRONMENT.get_template('guider_summary_template.html')
     template_css = pkg_resources.resource_filename('floyds_guider', os.path.join('templates', 'styles.css'))
     with open(template_css) as css_file:
-        css_style = css_file.read().decode('utf-8')
+        css_style = css_file.read()
     jpgs = [utils.convert_raw_fits_path_to_jpg(frame) for frame in floyds_frames]
     for jpg_file in jpgs:
         shutil.copy(jpg_file, os.path.join(output_directory, os.path.basename(jpg_file)))
