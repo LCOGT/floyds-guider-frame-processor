@@ -1,2 +1,1 @@
 include floyds_guider/templates/*.html
-include floyds_guider/templates/*.css
