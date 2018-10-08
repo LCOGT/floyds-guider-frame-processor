@@ -19,7 +19,7 @@
   </div>
 </div>
     {% for summary_plot in summary_plots %}
-    <h2>Guide Summary for {{summary_plot["science_frame_name"]}} </h2>
+    <div class="row"><h2>Guiding Summary for {{summary_plot["science_frame_name"]}} </h2></div>
     <div class="row">
       <div class="column">
         <img src="{{summary_plot['total_counts']}}" style="width:100%">
