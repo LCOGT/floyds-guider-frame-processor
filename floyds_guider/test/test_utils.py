@@ -103,12 +103,12 @@ def test_get_first_guiding_frame():
 
     assert utils.read_keywords_from_frames(first_guiding_frame, 'DATE-OBS') == '2018-09-08T08:31:40.549'
 
-def test_get_tracking_guider_frames():
+def test_get_guiding_guider_frames():
     header_info = [[('AGSTATE', 'GUIDING_CLOSED_LOOP'), ('ID', id)] for id in range(0,4)]
     header_info.append([('AGSTATE', 'ACQUIRING'), ('ID', 4)])
 
     test_frames = create_test_frames_from_header_info(header_info)
-    tracking_frames = utils.get_tracking_guider_frames(test_frames)
+    tracking_frames = utils.get_guiding_guider_frames(test_frames)
 
     assert utils.read_keywords_from_frames(tracking_frames, 'ID') == [id for id in range (0,4)]
 
@@ -117,6 +117,19 @@ def test_read_keywords_from_frames():
     test_frames = create_test_frames_from_header_info(headers)
 
     assert utils.read_keywords_from_frames(test_frames, 'BLKUID') == [id for id in range(0,4)]
+
+def test_convert_frame_to_jpeg():
+    base_path = os.path.join("..", "test_data")
+    guide_image_directory = utils.get_path("ogg", "kb42", "20180907")
+
+    test_guide_directory = base_path + guide_image_directory
+    first_guiding_frame = utils.get_first_guiding_frame(utils.get_good_frames_from_path(test_guide_directory))
+
+    output_path = os.path.join('.', utils.convert_fits_name_to_jpeg_name(first_guiding_frame))
+    utils.convert_frame_to_jpeg(first_guiding_frame, output_path, 100, 100)
+
+    assert os.path.exists(output_path)
+    assert os.path.getsize(output_path) > 100
 
 #End-to-end test
 def test_get_animation_from_frames():
@@ -133,7 +146,7 @@ def test_get_animation_from_frames():
     assert len(all_guide_frames) != 0
     assert len(all_floyds_frames) != 0
 
-    frames_tracking = utils.get_tracking_guider_frames(all_guide_frames)
+    frames_guiding = utils.get_guiding_guider_frames(all_guide_frames)
     frames_science = utils.get_science_exposures(all_floyds_frames)
 
     for frame in frames_science:
@@ -142,7 +155,7 @@ def test_get_animation_from_frames():
 
         block_id = utils.read_keywords_from_frames(frame, 'BLKUID')
         output_path = os.path.join('.', block_id + '_' + ut_start.strftime("%X"))
-        frames_to_animate = utils.get_guider_frames_for_science_exposure(frames_tracking,
+        frames_to_animate = utils.get_guider_frames_for_science_exposure(frames_guiding,
                                                                          ut_start,
                                                                          ut_stop)
 

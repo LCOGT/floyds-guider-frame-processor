@@ -167,6 +167,15 @@ def open_fits_file(filename):
 
     return hdulist
 
+def convert_frame_to_jpeg(frame, output_path, width, height):
+    """
+    Convert a single frame (HDUList) to a jpeg image
+    """
+    temp_fits_file = tempfile.NamedTemporaryFile()
+    frame.writeto(temp_fits_file.name)
+    conversions.fits_to_jpg(temp_fits_file.name, output_path, width=width, height=height)
+
+
 def read_keywords_from_frames(frames, keyword):
     """
     Retrieves keyword(s) from a single frame (HDUList) or a
@@ -188,9 +197,7 @@ def create_animation_from_frames(frames, output_path, fps=10, height=500, width=
 
     for frame in frames:
         with tempfile.NamedTemporaryFile() as temp_jpg_file:
-            temp_fits_file = tempfile.NamedTemporaryFile()
-            frame.writeto(temp_fits_file.name)
-            conversions.fits_to_jpg(temp_fits_file.name, temp_jpg_file.name, width=width, height=height)
+            convert_frame_to_jpeg(frame, temp_jpg_file.name, width, height)
             writer.append_data(imageio.imread(temp_jpg_file))
 
     writer.close()
@@ -205,7 +212,7 @@ def get_default_dayobs(site):
         day_obs = datetime.datetime.now()
     return day_obs.strftime('%Y%m%d')
 
-def get_tracking_guider_frames(guider_frames):
+def get_guiding_guider_frames(guider_frames):
     """
     Given a set of guide frames, return all that are 'guiding' - e.g.
     locked onto a target.
@@ -254,6 +261,8 @@ def get_guider_frames_for_science_exposure(guider_frames, ut_start, ut_stop):
     return [frame for guider_start, frame in zip(guider_starts, guider_frames)
             if in_date_range(to_datetime(guider_start), ut_start, ut_stop)]
 
+def convert_fits_name_to_jpeg_name(frame):
+    return os.path.basename(frame.filename().replace('.fits', '.jpg'))
 
 def convert_raw_fits_path_to_jpg(frame):
     return frame.replace('flash', 'flash' + os.path.sep + 'jpg').replace('.fits', '.jpg')
