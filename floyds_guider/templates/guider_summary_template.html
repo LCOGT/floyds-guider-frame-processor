@@ -16,12 +16,12 @@
 <div class="content">
     <figure style="text-align: center">
         <img title="Acquisition image for Molecule {{molecule['id']}}"
-             src="{{molecule['acquisition_image']}}" alt="Acquisition Image" style="width:40%">
+             src="{{molecule['acquisition_image']}}" alt="Acquisition Image" width=300>
         <figcaption><h2>Acquisition image for Molecule {{molecule['id']}}</h2></figcaption>
     </figure>
     <figure style="text-align: center">
         <img title="First Guiding Image for Molecule {{molecule['id']}}"
-             src="{{molecule['first_guiding_image']}}" alt="First Guiding Image" style="width:40%">
+             src="{{molecule['first_guiding_image']}}" alt="First Guiding Image" width="300">
         <figcaption><h2>First Guiding Image for Molecule {{molecule['id']}}</h2></figcaption>
     </figure>
 </div>
@@ -29,14 +29,14 @@
     {% for summary_plot in summary_plots %}
 <div class="content" align="center"><h2>Guiding Summary for {{summary_plot["science_frame_name"]}} </h2></div>
 <div class="content" align="center">
-    <img src="{{summary_plot['total_counts']}}" style="width:30%">
-    <img src="{{summary_plot['fwhm']}}" style="width:30%">
-    <img src="{{summary_plot['guide_state']}}" style="width:30%">
+    <img src="{{summary_plot['total_counts']}}" width="200">
+    <img src="{{summary_plot['fwhm']}}" width="200">
+    <img src="{{summary_plot['guide_state']}}" width="200">
 </div>
 <div class="content" align="center">
-  <img src="{{summary_plot['position']}}" style="width:30%">
-  <img src="{{summary_plot['x_position']}}" style="width:30%">
-  <img src="{{summary_plot['y_position']}}" style="width:30%">
+  <img src="{{summary_plot['position']}}" width="200">
+  <img src="{{summary_plot['x_position']}}" width="200">
+  <img src="{{summary_plot['y_position']}}" width="200">
 </div>
     {% endfor %}
 <div class="clear: both"></div>
@@ -45,9 +45,9 @@
     <h2> FLOYDS Frames </h2>
 </div>
 {% for frame in floyds_frames %}
-<div class=content>
+<div class="content">
     <figure style="text-align: center">
-        <img src="{{frame}}" style="width:90%">
+        <img src="{{frame}}" width="600">
         <figcaption><h2>{{frame}}</h2></figcaption>
     </figure>
 </div>
