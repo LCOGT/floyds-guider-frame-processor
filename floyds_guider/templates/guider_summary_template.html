@@ -2,68 +2,55 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>{{block_title}}</title>
+    <title>{{ block_title }}</title>
+    <style>
+	    figure {display: inline-block;}
+    </style>
+
 </head>
 <body>
-<center>
-    <h1><font COLOR=red> Quick summary <br> {{block_title}} </font></h1>
-</center>
-<br><br><br>
+<div class="content" align="center">
+    <h1><font COLOR=red> Quick summary <br> {{ block_title }} </font></h1>
+</div>
 {% for molecule in molecules %}
-<table>
-    <tr ALIGN="center">
-        <td COLSPAN=1><b> Acquisition image for Molecule {{molecule["id"]}} </b></td>
-        <td COLSPAN=1><b> First Guiding Image for Molecule {{molecule["id"]}}</b></td>
-    </tr>
-    <tr>
-        <th ROWSPAN=2>
-            <IMG src="{{molecule['acquisition_image']}}" height="400">
-        </th>
-        <th ROWSPAN=2>
-            <IMG src="{{molecule['first_guiding_image']}}" height="400">
-        </th>
-    </tr>
-    <tr></tr>
-    <tr></tr>
-    <tr ALIGN="center">
-        <td COLSPAN=1>{{molecule['acquisition_image']}}</td>
-        <td COLSPAN=1>{{molecule['first_guiding_image']}}</td>
-    </tr>
-</table>
-<br><br>
-<table>
+<div class="content">
+    <figure style="text-align: center">
+        <img title="Acquisition image for Molecule {{molecule['id']}}"
+             src="{{molecule['acquisition_image']}}" alt="Acquisition Image" style="width: 6in">
+        <figcaption><h2>Acquisition image for Molecule {{molecule['id']}}</h2></figcaption>
+    </figure>
+    <figure style="text-align: center">
+        <img title="First Guiding Image for Molecule {{molecule['id']}}"
+             src="{{molecule['first_guiding_image']}}" alt="First Guiding Image" style="width: 6in";
+        <figcaption><h2>First Guiding Image for Molecule {{molecule['id']}}</h2></figcaption>
+    </figure>
+</div>
+<div class="clear: both"></div>
     {% for summary_plot in summary_plots %}
-    <tr ALIGN="center">
-        <th COLSPAN="3" ALIGN="CENTER"><b> Guide Summary for {{summary_plot["science_frame_name"]}} </b></th>
-    </tr>
-    <tr>
-        <td ROWSPAN=2><IMG src="{{summary_plot['total_counts']}}" height="300"></td>
-        <td ROWSPAN=2><IMG src="{{summary_plot['fwhm']}}" height="300"></td>
-        <td ROWSPAN=2><IMG src="{{summary_plot['guide_state']}}" height="300"></td>
-    </tr>
-    <tr></tr>
-    <tr>
-        <td ROWSPAN=2><IMG src="{{summary_plot['position']}}" height="300"></td>
-        <td ROWSPAN=2><IMG src="{{summary_plot['x_position']}}" height="300"></td>
-        <td ROWSPAN=2><IMG src="{{summary_plot['y_position']}}" height="300"></td>
-    </tr>
+<div class="content" align="center"><h2>Guiding Summary for {{summary_plot["science_frame_name"]}} </h2></div>
+<div class="content" align="center">
+    <img src="{{summary_plot['total_counts']}}" width="200">
+    <img src="{{summary_plot['fwhm']}}" width="200">
+    <img src="{{summary_plot['guide_state']}}" width="200">
+</div>
+<div class="content" align="center">
+  <img src="{{summary_plot['position']}}" width="200">
+  <img src="{{summary_plot['x_position']}}" width="200">
+  <img src="{{summary_plot['y_position']}}" width="200">
+</div>
     {% endfor %}
-</table>
+<div class="clear: both"></div>
 {% endfor %}
-<table>
-    <tr ALIGN="center">
-        <td COLSPAN=1><b> FLOYDS Frames </b></td>
-    </tr>
-    {% for frame in floyds_frames %}
-    <tr>
-        <td ROWSPAN=2><IMG src="{{frame}}" height="200"></td>
-    </tr>
-    <tr></tr>
-    <tr></tr>
-    <tr ALIGN="center">
-        <td COLSPAN=1>{{frame}}</td>
-    </tr>
-    {% endfor %}
-</table>
+<div class="content" align="center">
+    <h2> FLOYDS Frames </h2>
+</div>
+{% for frame in floyds_frames %}
+<div class="content">
+    <figure style="text-align: center">
+        <img src="{{frame}}" width="600">
+        <figcaption><h2>{{frame}}</h2></figcaption>
+    </figure>
+</div>
+{% endfor %}
 </body>
 </html>

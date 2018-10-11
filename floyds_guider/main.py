@@ -12,6 +12,7 @@ from astropy.io import fits
 import tarfile
 import jinja2
 import shutil
+import pkg_resources
 
 logger = logging.getLogger('floyds-guider-frames')
 
@@ -87,11 +88,14 @@ def make_tar_file_of_guider_frames(guider_frames, summary_plots, summary_output_
 
 def make_guider_summary_webpage(summary_root_name, output_directory, molecule_info, summary_plots, floyds_frames):
     template = JINJA_ENVIRONMENT.get_template('guider_summary_template.html')
+    template_css = pkg_resources.resource_filename('floyds_guider', os.path.join('templates', 'styles.css'))
+    with open(template_css) as css_file:
+        css_style = css_file.read()
     jpgs = [utils.convert_raw_fits_path_to_jpg(frame) for frame in floyds_frames]
     for jpg_file in jpgs:
         shutil.copy(jpg_file, os.path.join(output_directory, os.path.basename(jpg_file)))
     with open(os.path.join(output_directory, summary_root_name + '.html'), 'w') as file_handle:
-        file_handle.write(template.render(molecules=molecule_info, summary_plots=summary_plots,
+        file_handle.write(template.render(style_string=css_style, molecules=molecule_info, summary_plots=summary_plots,
                                           floyds_frames=[os.path.basename(jpg_file) for jpg_file in jpgs],
                                           block_title=summary_root_name))
 
@@ -168,5 +172,5 @@ def process_guider_frames():
         try:
             process_block(floyds_frames, guider_frames, observation_block, directory_for_summary_on_dayobs)
         except Exception as e:
-            logger.error('Exception produced for Block ID: {block}: {execption}'.format(block=observation_block,
+            logger.error('Exception produced for Block ID: {block}: {exception}'.format(block=observation_block,
                                                                                         exception=e))
