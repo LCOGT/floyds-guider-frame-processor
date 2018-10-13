@@ -32,6 +32,22 @@
 </table>
 <br><br>
 <table>
+    <tr ALIGN="center">
+        <td COLSPAN=1><b> Guide Frame Animations </b></td>
+    </tr>
+    {% for animation in guider_animations %}
+    <tr>
+        <td ROWSPAN=2><IMG src="{{animation}}" height="400"></td>
+    </tr>
+    <tr></tr>
+    <tr></tr>
+    <tr ALIGN="center">
+        <td COLSPAN=1>{{animation}}</td>
+    </tr>
+    {% endfor %}
+</table>
+<br><br>
+<table>
     {% for summary_plot in summary_plots %}
     <tr ALIGN="center">
         <th COLSPAN="3" ALIGN="CENTER"><b> Guide Summary for {{summary_plot["science_frame_name"]}} </b></th>

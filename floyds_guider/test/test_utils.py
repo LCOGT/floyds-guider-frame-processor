@@ -103,12 +103,12 @@ def test_get_first_guiding_frame():
 
     assert utils.read_keywords_from_frames(first_guiding_frame, 'DATE-OBS') == '2018-09-08T08:31:40.549'
 
-def test_get_guiding_guider_frames():
+def test_get_non_acquisition_guider_frames():
     header_info = [[('AGSTATE', 'GUIDING_CLOSED_LOOP'), ('ID', id)] for id in range(0,4)]
     header_info.append([('AGSTATE', 'ACQUIRING'), ('ID', 4)])
 
     test_frames = create_test_frames_from_header_info(header_info)
-    tracking_frames = utils.get_guiding_guider_frames(test_frames)
+    tracking_frames = utils.get_non_acquisition_guider_frames(test_frames)
 
     assert utils.read_keywords_from_frames(tracking_frames, 'ID') == [id for id in range (0,4)]
 
@@ -134,8 +134,8 @@ def test_convert_frame_to_jpeg():
 #End-to-end test
 def test_get_animation_from_frames():
     base_path = os.path.join("..", "test_data")
-    guide_image_directory = utils.get_path("ogg", "kb42", "20180907")
-    floyds_image_directory = utils.get_path("ogg", "floyds01", "20180907")
+    guide_image_directory = utils.get_path("ogg", "kb42", "20181003")
+    floyds_image_directory = utils.get_path("ogg", "floyds01", "20181003")
 
     test_guide_directory = base_path + guide_image_directory
     test_sci_directory = base_path + floyds_image_directory
@@ -146,7 +146,8 @@ def test_get_animation_from_frames():
     assert len(all_guide_frames) != 0
     assert len(all_floyds_frames) != 0
 
-    frames_guiding = utils.get_guiding_guider_frames(all_guide_frames)
+    frames_guiding = all_guide_frames
+    frames_guiding = utils.get_non_acqusition_guider_frames(all_guide_frames)
     frames_science = utils.get_science_exposures(all_floyds_frames)
 
     for frame in frames_science:

@@ -136,7 +136,7 @@ def get_path(site_code, camera_code, observation_date):
     :return: path to frames on Chanunpa
     """
 
-    base_path = os.path.join("/", "archive", "engineering")
+    base_path = os.path.join('/', 'archive', 'engineering')
     frames_path = os.path.join(base_path, str(site_code), str(camera_code),
                                      str(observation_date), "raw", "*")
     return frames_path
@@ -167,7 +167,10 @@ def open_fits_file(filename):
 
     return hdulist
 
-def convert_frame_to_jpeg(frame, output_path, width, height):
+
+
+
+def convert_frame_to_jpeg(frame, output_path, width=500, height=500):
     """
     Convert a single frame (HDUList) to a jpeg image
     """
@@ -212,13 +215,13 @@ def get_default_dayobs(site):
         day_obs = datetime.datetime.now()
     return day_obs.strftime('%Y%m%d')
 
-def get_guiding_guider_frames(guider_frames):
+def get_non_acquisition_guider_frames(guider_frames):
     """
     Given a set of guide frames, return all that are 'guiding' - e.g.
     locked onto a target.
     """
     guider_states = read_keywords_from_frames(guider_frames, 'AGSTATE')
-    return [frame for state, frame in zip(guider_states, guider_frames) if 'GUIDING' in state]
+    return [frame for state, frame in zip(guider_states, guider_frames) if 'ACQ' not in state]
 
 
 def get_guider_frames_in_molecule(frames, molecule):
@@ -245,7 +248,7 @@ def get_frames_in_block(frames, block_id):
 
 
 def get_proposal_id(frames):
-    proposal_ids = read_keywords_from_fits_files(frames, 'PROPID')
+    proposal_ids = read_keywords_from_frames(frames, 'PROPID')
     return proposal_ids[0]
 
 
@@ -261,8 +264,30 @@ def get_guider_frames_for_science_exposure(guider_frames, ut_start, ut_stop):
     return [frame for guider_start, frame in zip(guider_starts, guider_frames)
             if in_date_range(to_datetime(guider_start), ut_start, ut_stop)]
 
-def convert_fits_name_to_jpeg_name(frame):
+def get_directory_info_from_frame(frame):
+    directory_info = {}
+    directory_info['site'] = read_keywords_from_frames(frame, 'SITEID')
+    directory_info['camera'] = read_keywords_from_frames(frame, 'INSTRUME')
+    directory_info['day_obs'] = read_keywords_from_frames(frame, 'DAY-OBS')
+    return directory_info
+
+def get_fpacked_filename_from_frame(frame):
+    #TODO: write test
+    return os.path.basename(frame.filename().replace('.fits', '.fits.fz'))
+
+def get_jpeg_filename_from_frame(frame):
+    #TODO: write test
     return os.path.basename(frame.filename().replace('.fits', '.jpg'))
 
 def convert_raw_fits_path_to_jpg(frame):
     return frame.replace('flash', 'flash' + os.path.sep + 'jpg').replace('.fits', '.jpg')
+
+def map_en_to_floyds(instrument):
+    #TODO: write tests
+    # Floyds cameras are in puppet as enXX but in ConfigDB as floydsXX.
+    # Map to the enXX representation.
+    floyds_map = {
+        'en06': 'floyds01',
+        'en05': 'floyds02'
+    }
+    return instrument if instrument not in floyds_map else floyds_map[instrument]

@@ -29,5 +29,6 @@ setup(name='floyds-guider-frame-processor',
                         'pandas',
                         'fits2image'],
       tests_require=['pytest'],
+      data_files=[('floyds_guider/templates/', ['floyds_guider/templates/guider_summary_template.html'])],
       dependency_links=['git+git://github.com/LCOGT/fits2image.git#egg=fits2image'],
       entry_points = {'console_scripts': ['process-floyds-guider=floyds_guider.main:process_guider_frames']})
