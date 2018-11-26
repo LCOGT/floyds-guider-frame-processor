@@ -13,6 +13,8 @@ import tarfile
 import jinja2
 import shutil
 import pkg_resources
+import traceback
+import sys
 
 logger = logging.getLogger('floyds-guider-frames')
 
@@ -171,6 +173,8 @@ def process_guider_frames():
     for observation_block in set(observation_blocks):
         try:
             process_block(floyds_frames, guider_frames, observation_block, directory_for_summary_on_dayobs)
-        except Exception as e:
+        except Exception:
+            exc_type, exc_value, exc_tb = sys.exc_info()
+            exception_message = traceback.format_exception(exc_type, exc_value, exc_tb)
             logger.error('Exception produced for Block ID: {block}: {exception}'.format(block=observation_block,
-                                                                                        exception=e))
+                                                                                        exception=exception_message))
