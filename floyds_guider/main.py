@@ -23,7 +23,7 @@ IMAGE_ROOT_DIRECTORY = os.path.join(os.path.sep, 'var', 'www', 'html', 'images')
 SUMMARY_ROOT_DIRECTORY = os.path.join(os.path.sep, 'var', 'www', 'html', 'night_summary')
 
 GUIDER_CAMERAS = {'ogg': 'kb42', 'coj': 'kb38'}
-FLOYDS_CAMERAS = {'ogg': 'en06', 'coj': 'en05'}
+FLOYDS_CAMERAS = {'ogg': 'en06', 'coj': 'en12'}
 
 JINJA_ENVIRONMENT = jinja2.Environment(loader=jinja2.PackageLoader('floyds_guider', 'templates'),
                                        autoescape=jinja2.select_autoescape(['html', 'xml']))
