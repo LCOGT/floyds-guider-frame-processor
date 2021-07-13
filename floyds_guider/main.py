@@ -118,13 +118,14 @@ def link_frames_to_images_directory(frames, image_directory):
             logger.error('Could not link {frame}: {exception}'.format(frame=jpg_file, exception=e))
 
 
-def process_block(floyds_frames, guider_frames, observation_block, output_directory):
-    floyds_frames_for_block = utils.get_frames_in_block(floyds_frames, observation_block)
-    guider_frames_for_block = utils.get_frames_in_block(guider_frames, observation_block)
+def process_block(floyds_frames, guider_frames, observation_block, object_name, output_directory):
+    floyds_frames_for_block = utils.get_frames_in_block(floyds_frames, observation_block, object_name)
+    guider_frames_for_block = utils.get_frames_in_block(guider_frames, observation_block, object_name)
 
     proposal_id = utils.get_proposal_id(floyds_frames_for_block)
     summary_block_root_name = '_'.join([utils.convert_to_safe_filename(proposal_id),
-                                        utils.convert_to_safe_filename(observation_block)])
+                                        utils.convert_to_safe_filename(observation_block),
+                                        utils.convert_to_safe_filename(object_name)])
     path_for_summary_for_block = os.path.join(output_directory, summary_block_root_name)
     if not os.path.exists(path_for_summary_for_block):
         os.mkdir(path_for_summary_for_block)
@@ -170,11 +171,11 @@ def process_guider_frames():
         os.mkdir(directory_for_summary_on_dayobs)
 
     observation_blocks = utils.read_keywords_from_fits_files(floyds_frames, 'BLKUID')
-    for observation_block in set(observation_blocks):
+    objects = utils.read_keywords_from_fits_files(floyds_frames, 'OBJECT')
+    for obj, observation_block in set(zip(objects, observation_blocks)):
         try:
-            process_block(floyds_frames, guider_frames, observation_block, directory_for_summary_on_dayobs)
+            process_block(floyds_frames, guider_frames, observation_block, obj, directory_for_summary_on_dayobs)
         except Exception:
             exc_type, exc_value, exc_tb = sys.exc_info()
             exception_message = traceback.format_exception(exc_type, exc_value, exc_tb)
-            logger.error('Exception produced for Block ID: {block}: {exception}'.format(block=observation_block,
-                                                                                        exception=exception_message))
+            logger.error(f'Exception produced for Target: {obj } + Block ID: {observation_block}: {exception_message}')
