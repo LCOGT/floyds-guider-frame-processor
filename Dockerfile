@@ -6,7 +6,7 @@ RUN mkdir /home/eng && /usr/sbin/groupadd -g 500 "eng" \
 
 COPY . /lco/floyds-guider-frame-processor
 
-RUN python /lco/floyds-guider-frame-processor/setup.py install
+RUN pip install /lco/floyds-guider-frame-processor/
 
 USER eng
 
