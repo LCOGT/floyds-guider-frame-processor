@@ -111,9 +111,11 @@ def get_science_exposures(frames):
     return [frame for obstype, frame in zip(obstypes, frames) if obstype == 'SPECTRUM']
 
 
-def get_frames_in_block(frames, block_id):
+def get_frames_in_block(frames, block_id, object_name):
     block_ids = read_keywords_from_fits_files(frames, 'BLKUID')
-    return [frame for frame_block_id, frame in zip(block_ids, frames) if frame_block_id == block_id]
+    object_names = read_keywords_from_fits_files(frames, 'OBJECT')
+    return [frame for frame_block_id, frame_object_name, frame in zip(block_ids, object_names, frames)
+            if frame_block_id == block_id and frame_object_name == object_name]
 
 
 def get_proposal_id(frames):
