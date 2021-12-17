@@ -60,6 +60,24 @@ def read_stats_from_xml_files(xml_files):
     return stats
 
 
+def read_stats_from_fits_files(fits_files):
+    dx = read_keywords_from_fits_files(fits_files, 'AGDX')
+    dy = read_keywords_from_fits_files(fits_files, 'AGDY')
+    fwhm = read_keywords_from_fits_files(fits_files, 'AGFWHM')
+    total_counts = []
+    for file in fits_files:
+        xml_file = file.replace('.fits', '.fits.guide.xml').replace('flash/', 'cat/')
+        total_counts.append(extract_peak_pixel_from_xml_file(xml_file))
+
+    return {'total_counts': total_counts, 'x_center': dx, 'y_center': dy, 'fwhm': fwhm}
+
+
+def extract_peak_pixel_from_xml_file(xml_file):
+    tree = ElementTree.parse(xml_file)
+    peak_pixel_value = tree.findall('peakPixelValue')
+    return peak_pixel_value.pop().text
+
+
 def extract_stats_from_xml_file(xml_file):
     tree = ElementTree.parse(xml_file)
     for centroid in tree.findall('centroids'):
