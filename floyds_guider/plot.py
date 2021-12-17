@@ -1,5 +1,6 @@
-from matplotlib import pyplot
 import logging
+
+from matplotlib import pyplot
 
 from floyds_guider import utils
 
@@ -37,8 +38,6 @@ def make_guide_info_plots(guider_frames, ut_start, output_basename):
         make_plot_for_webpage(relative_guider_times, guider_states, guider_time_label,
                               'Guider State', plot_file_names['guide_state'], y_tick_label_rotation=65)
 
-        xml_files = [f.replace('.fits', '.fits.guide.xml').replace('flash/', 'cat/')
-                     for f in guider_frames]
         stats = utils.read_stats_from_fits_files(guider_frames)
 
         make_plot_for_webpage(relative_guider_times, stats['total_counts'], guider_time_label, 'Total Counts',
