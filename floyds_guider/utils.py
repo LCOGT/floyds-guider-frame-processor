@@ -1,14 +1,12 @@
 import datetime
+import logging
 import os
+import string
 from glob import glob
 from xml.etree import ElementTree
 
-import numpy as np
 from astropy.io import fits
 from astropy.time import Time
-
-import string
-import logging
 
 logger = logging.getLogger('floyds-guider-frames')
 
@@ -51,31 +49,23 @@ def get_relative_guider_observation_times(guider_frames, ut_start):
             for guider_frame_date, guider_exposure_time in zip(dates_of_guider_frames, guider_exposure_times)]
 
 
-def read_stats_from_xml_files(xml_files):
-    stats = {'total_counts': [], 'x_center': [], 'y_center': [], 'fwhm': []}
-    for xml_file in xml_files:
-        for keyword, value in zip(['total_counts', 'x_center', 'y_center', 'fwhm'],
-                                  extract_stats_from_xml_file(xml_file)):
-            stats[keyword].append(value)
-    return stats
+def read_stats_from_fits_files(fits_files):
+    dx = read_keywords_from_fits_files(fits_files, 'AGDX')
+    dy = read_keywords_from_fits_files(fits_files, 'AGDY')
+    fwhm = []
+    total_counts = []
+    for file in fits_files:
+        xml_file = file.replace('.fits', '.fits.guide.xml').replace('flash/', 'cat/')
+        fwhm.append(extract_field_from_xml_file(xml_file, 'fwhmMedian'))
+        total_counts.append(extract_field_from_xml_file(xml_file, 'peakPixelValue'))
+
+    return {'total_counts': total_counts, 'x_center': dx, 'y_center': dy, 'fwhm': fwhm}
 
 
-def extract_stats_from_xml_file(xml_file):
+def extract_field_from_xml_file(xml_file, field):
     tree = ElementTree.parse(xml_file)
-    for centroid in tree.findall('centroids'):
-        if centroid.find('guideStar').text == 'true':
-            total_counts = float(centroid.find('totalFlux').text)
-            x_center = float(centroid.find('pixel').find('x').text)
-            y_center = float(centroid.find('pixel').find('y').text)
-            fwhm = float(centroid.find('fwhm').text)
-            stats = total_counts, x_center, y_center, fwhm
-    # Fallback in case there is no guide star in the xml file
-    try:
-        stats
-    except NameError:
-        logger.error('No guide star found in {xml_file}'.format(xml_file=xml_file))
-        stats = np.nan, np.nan, np.nan, np.nan
-    return stats
+    peak_pixel_value = tree.findall(field)
+    return float(peak_pixel_value.pop().text)
 
 
 def get_files(path):
