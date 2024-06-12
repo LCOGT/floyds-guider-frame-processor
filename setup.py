@@ -15,7 +15,7 @@ from setuptools import setup, find_packages
 setup(name='floyds-guider-frame-processor',
       author=['Curtis McCully'],
       author_email=['cmccully@lco.global'],
-      version='0.0.3',
+      version='0.0.4',
       zip_safe=False,
       include_package_data=True,
       packages=find_packages(),
